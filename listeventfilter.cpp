@@ -1,5 +1,6 @@
 #include "listeventfilter.h"
 #include <QTableWidget>
+#include <QTreeView>
 #include <QEvent>
 #include <QWheelEvent>
 
@@ -7,10 +8,11 @@
 bool ListEventFilter::eventFilter(QObject *watched, QEvent *event)
 {
     QTableWidget *list = qobject_cast<QTableWidget *>(watched);
+    QTreeView *tree = qobject_cast<QTreeView *>(watched);
 
     if (list) {
         switch(event->type()) {
-            case QEvent::Resize: emit resized(); break;
+            case QEvent::Resize: emit listResized(); break;
             case QEvent::Wheel: {
                 QWheelEvent *w = dynamic_cast<QWheelEvent *>(event);
                 emit wheeled(w->delta());
@@ -25,5 +27,18 @@ bool ListEventFilter::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
+    if(tree) {
+        switch(event->type()) {
+            case QEvent::KeyPress: {
+                QKeyEvent *k = dynamic_cast<QKeyEvent *>(event);
+                if(k->key() == Qt::Key_Delete) {
+                    emit deleteDir();
+                }
+            } break;
+            default: break;
+        }
+    }
+
     return QObject::eventFilter(watched, event);
 }
+

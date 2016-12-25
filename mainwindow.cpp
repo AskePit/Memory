@@ -3,34 +3,99 @@
 
 #include "memorymodel.h"
 #include "listeventfilter.h"
+
+#include <QMessageBox>
+#include <QInputDialog>
 #include <QDebug>
+
+static int callQuestionDialog(const QString &message)
+{
+    QMessageBox msgBox;
+    msgBox.setText(message);
+
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    return msgBox.exec();
+}
+
+/*static void callInfoDialog(const QString &message)
+{
+    QMessageBox msgBox;
+    msgBox.setText(message);
+
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+}*/
+
+static QString getTextDialog(const QString &title, const QString &message, QWidget *parent)
+{
+    bool ok = false;
+    QString answer = QInputDialog::getText(parent, title, message, QLineEdit::Normal, "", &ok);
+    return ok ? answer : QString::null;
+}
+
+static void createFile(const QString &fileName)
+{
+    QFile f(fileName);
+    f.open(QIODevice::WriteOnly);
+    f.close();
+}
+
+static QPoint getListPos(QTableWidget *w, const QString &str)
+{
+    QPoint point;
+    bool found = false;
+    for(int c = 0; c<w->columnCount(); ++c) {
+        for(int r = 0; r<w->rowCount(); ++r) {
+            auto item = w->item(r, c);
+            if(item->text() == str) {
+                point.setY(r);
+                point.setX(c);
+                found = true;
+                break;
+            }
+        }
+        if(found) {
+            break;
+        }
+    }
+
+    return point;
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    model(new MemoryModel("../notes", this)),
+    dirModel(new MemoryModel("../notes", this)),
     listEventFilter(new ListEventFilter),
     currFileName(QString::null),
     dirChanged(true),
-    fileChanged(false)
+    fileEdited(false)
 {
     ui->setupUi(this);
 
     ui->treeSplitter->setSizes({100, 260});
     ui->listSplitter->setSizes({100, 260});
 
-    ui->tree->setModel(model);
-    ui->tree->setRootIndex(model->rootIndex());
+    ui->tree->setModel(dirModel);
+    ui->tree->setRootIndex(dirModel->rootIndex());
+
+    ui->list->installEventFilter(listEventFilter);
+    ui->tree->installEventFilter(listEventFilter);
 
     connect(ui->tree->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onDirChanged);
     connect(ui->list->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
+
     connect(ui->list, &QTableWidget::customContextMenuRequested, this, &MainWindow::showListContextMenu);
     connect(ui->tree, &QTreeView::customContextMenuRequested, this, &MainWindow::showTreeContextMenu);
-    ui->list->installEventFilter(listEventFilter);
-    connect(listEventFilter, &ListEventFilter::resized, this, &MainWindow::updateList);
+
+    connect(listEventFilter, &ListEventFilter::listResized, this, &MainWindow::updateList);
     connect(listEventFilter, &ListEventFilter::deleteFile, this, &MainWindow::deleteFile);
+    connect(listEventFilter, &ListEventFilter::deleteDir, this, &MainWindow::deleteDir);
+
     connect(ui->field, &QPlainTextEdit::textChanged, [=]() {
-        fileChanged = true;
+        fileEdited = true;
     });
 }
 
@@ -40,7 +105,7 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
 
     files.clear();
 
-    QFileInfo i = model->fileInfo(current);
+    QFileInfo i = dirModel->fileInfo(current);
     QDir dir(i.filePath());
 
     auto filesInfo = dir.entryInfoList({}, QDir::Files);
@@ -58,7 +123,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
 {
     Q_UNUSED(previous);
 
-    if(!currFileName.isEmpty() && fileChanged) {
+    if(!currFileName.isEmpty() && fileEdited) {
         qDebug() << "write";
         QFile file(currFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Truncate);
@@ -87,7 +152,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     ui->field->setPlainText(QString::fromUtf8(file.readAll()));
     file.close();
 
-    fileChanged = false;
+    fileEdited = false;
 }
 
 void MainWindow::updateList()
@@ -193,6 +258,12 @@ void MainWindow::showTreeContextMenu(const QPoint& point)
 void MainWindow::deleteFile()
 {
     int idx = ui->list->rowCount()*ui->list->currentColumn() + ui->list->currentRow();
+
+    int ret = callQuestionDialog(QString("Delete file \"%1\"?").arg(ui->list->currentItem()->text()));
+    if(ret != QMessageBox::Ok) {
+        return;
+    }
+
     QString filename = QFileInfo(files[idx]).filePath();
 
     QFile::remove(filename);
@@ -200,7 +271,7 @@ void MainWindow::deleteFile()
     ui->field->clear();
 
     dirChanged = false;
-    fileChanged = false;
+    fileEdited = false;
     currFileName = QString::null;
 
     updateList();
@@ -209,6 +280,37 @@ void MainWindow::deleteFile()
 void MainWindow::deleteDir()
 {
     auto index = ui->tree->currentIndex();
-    model->remove(index);
+
+    int ret = callQuestionDialog(QString("Delete folder \"%1\"?").arg(dirModel->data(index).toString()));
+    if(ret != QMessageBox::Ok) {
+        return;
+    }
+
+    dirModel->remove(index);
 }
 
+void MainWindow::on_actionNew_File_triggered()
+{
+    QString fileName = getTextDialog("New file", "File name:", this);
+
+    if(fileName.isEmpty()) {
+        return;
+    }
+
+    QString dirPath = dirModel->filePath(ui->tree->currentIndex());
+    QString newFilePath = dirPath + "/" + fileName;
+    createFile(newFilePath);
+
+    files << newFilePath;
+    files.sort(Qt::CaseInsensitive);
+    updateList();
+
+    QPoint pos = getListPos(ui->list, fileName);
+    ui->list->setCurrentCell(pos.y(), pos.x());
+}
+
+void MainWindow::on_actionNew_Folder_triggered()
+{
+    QString dirname = getTextDialog("New folder", "Folder name:", this);
+    qDebug() << (dirname.isNull() ? "QString::null" : dirname);
+}

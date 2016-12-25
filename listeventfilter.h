@@ -9,9 +9,10 @@ public:
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
 signals:
-    void resized();
+    void listResized();
     void wheeled(int delta);
     void deleteFile();
+    void deleteDir();
 };
 
 #endif // LISTEVENTFILTER_H

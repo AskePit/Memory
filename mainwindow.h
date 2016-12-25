@@ -27,15 +27,18 @@ private slots:
     void deleteFile();
     void deleteDir();
 
+    void on_actionNew_File_triggered();
+    void on_actionNew_Folder_triggered();
+
 private:
     Ui::MainWindow *ui;
-    MemoryModel *model;
+    MemoryModel *dirModel;
     ListEventFilter *listEventFilter;
     QStringList files;
 
     QString currFileName;
-    bool dirChanged;      // directory was changed to another
-    bool fileChanged;     // current file's content changed
+    bool dirChanged;
+    bool fileEdited;
 };
 
 #endif // MAINWINDOW_H
