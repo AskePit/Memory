@@ -35,6 +35,30 @@ static QString getTextDialog(const QString &title, const QString &message, QWidg
     return ok ? answer : QString::null;
 }
 
+static const QString forbiddenSymbols = "\":/\\*?<>|";
+
+static bool isCorrectFileName(const QString &fileName)
+{
+    for(const auto &ch : forbiddenSymbols) {
+        if(fileName.contains(ch)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static QString getFileNameDialog(const QString &title, const QString &message, QWidget *parent)
+{
+    QString answer = getTextDialog(title, message, parent);
+    while(!isCorrectFileName(answer) && !answer.isNull()) {
+        answer = getTextDialog(title, message + " no any of " + forbiddenSymbols, parent);
+    }
+
+    return answer;
+}
+
+
 static void createFile(const QString &fileName)
 {
     QFile f(fileName);
@@ -105,6 +129,9 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     ui->actionDelete_Folder->setEnabled(false);
 
     if(!current.isValid()) {
+        ui->field->clear();
+        ui->list->clear();
+        files.clear();
         return;
     }
 
@@ -294,7 +321,7 @@ void MainWindow::on_actionDelete_Folder_triggered()
 
 void MainWindow::on_actionNew_File_triggered()
 {
-    QString fileName = getTextDialog("New file", "File name:", this);
+    QString fileName = getFileNameDialog("New file", "File name:", this);
 
     if(fileName.isEmpty()) {
         return;
@@ -314,10 +341,23 @@ void MainWindow::on_actionNew_File_triggered()
 
 void MainWindow::on_actionNew_Child_Folder_triggered()
 {
-    QString dirname = getTextDialog("New child folder", "Folder name:", this);
+    QString dirName = getFileNameDialog("New child folder", "Folder name:", this);
+    if(dirName.isEmpty()) {
+        return;
+    }
+
+    QModelIndex newDir = dirModel->mkdir(ui->tree->currentIndex(), dirName);
+    ui->tree->setCurrentIndex(newDir);
 }
 
 void MainWindow::on_actionNew_Sibling_Folder_triggered()
 {
-    QString dirname = getTextDialog("New sibling folder", "Folder name:", this);
+    QString dirName = getFileNameDialog("New sibling folder", "Folder name:", this);
+    if(dirName.isEmpty()) {
+        return;
+    }
+
+    QModelIndex newDir = dirModel->mkdir(ui->tree->currentIndex().parent(), dirName);
+    ui->tree->setCurrentIndex(newDir);
 }
+

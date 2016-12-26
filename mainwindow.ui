@@ -558,6 +558,9 @@ QTableWidget::item:selected {
    <addaction name="actionNew_File"/>
    <addaction name="actionNew_Child_Folder"/>
    <addaction name="actionNew_Sibling_Folder"/>
+   <addaction name="separator"/>
+   <addaction name="actionDelete_File"/>
+   <addaction name="actionDelete_Folder"/>
   </widget>
   <action name="actionNew_File">
    <property name="icon">
@@ -590,6 +593,10 @@ QTableWidget::item:selected {
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/remove_file.png</normaloff>:/remove_file.png</iconset>
+   </property>
    <property name="text">
     <string>Delete File</string>
    </property>
@@ -597,6 +604,10 @@ QTableWidget::item:selected {
   <action name="actionDelete_Folder">
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/remove_dir.png</normaloff>:/remove_dir.png</iconset>
    </property>
    <property name="text">
     <string>Delete Folder</string>
