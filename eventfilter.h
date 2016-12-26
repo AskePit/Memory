@@ -3,7 +3,9 @@
 
 #include <QObject>
 
-class ListEventFilter : public QObject {
+namespace memory {
+
+class EventFilter : public QObject {
     Q_OBJECT
 public:
     virtual bool eventFilter(QObject *watched, QEvent *event);
@@ -14,5 +16,7 @@ signals:
     void deleteFile();
     void deleteDir();
 };
+
+} // namespace memory
 
 #endif // LISTEVENTFILTER_H

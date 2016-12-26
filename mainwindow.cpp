@@ -1,12 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "memorymodel.h"
-#include "listeventfilter.h"
+#include "dirmodel.h"
+#include "eventfilter.h"
 
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QDebug>
+
+namespace memory {
 
 static int callQuestionDialog(const QString &message)
 {
@@ -17,16 +19,6 @@ static int callQuestionDialog(const QString &message)
     msgBox.setDefaultButton(QMessageBox::Cancel);
     return msgBox.exec();
 }
-
-/*static void callInfoDialog(const QString &message)
-{
-    QMessageBox msgBox;
-    msgBox.setText(message);
-
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
-}*/
 
 static QString getTextDialog(const QString &title, const QString &message, QWidget *parent)
 {
@@ -88,11 +80,28 @@ static QPoint getListPos(QTableWidget *w, const QString &str)
     return point;
 }
 
+static void resizeFilesColumns(QTableWidget *w)
+{
+    const int extraSpace = 15;
+
+    for(int c = 0; c<w->columnCount(); ++c) {
+        w->resizeColumnToContents(c);
+        w->setColumnWidth(c, w->columnWidth(c) + extraSpace);
+    }
+}
+
+static void boldenItem(QTableWidgetItem *item, bool bold)
+{
+    QFont font = item->font();
+    font.setBold(bold);
+    item->setFont(font);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    dirModel(new MemoryModel("../notes", this)),
-    listEventFilter(new ListEventFilter),
+    dirModel(new DirModel("../notes", this)),
+    listEventFilter(new EventFilter),
     currFileName(QString::null),
     dirChanged(true),
     fileEdited(false)
@@ -114,9 +123,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->list, &QTableWidget::customContextMenuRequested, this, &MainWindow::showListContextMenu);
     connect(ui->tree, &QTreeView::customContextMenuRequested, this, &MainWindow::showTreeContextMenu);
 
-    connect(listEventFilter, &ListEventFilter::listResized, this, &MainWindow::updateList);
-    connect(listEventFilter, &ListEventFilter::deleteFile, this, &MainWindow::on_actionDelete_File_triggered);
-    connect(listEventFilter, &ListEventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
+    connect(listEventFilter, &EventFilter::listResized, this, &MainWindow::updateList);
+    connect(listEventFilter, &EventFilter::deleteFile, this, &MainWindow::on_actionDelete_File_triggered);
+    connect(listEventFilter, &EventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
 
     connect(ui->field, &QPlainTextEdit::textChanged, [=]() {
         fileEdited = true;
@@ -154,7 +163,6 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
 
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-    Q_UNUSED(previous);
     ui->actionDelete_File->setEnabled(false);
 
     if(!currFileName.isEmpty() && fileEdited) {
@@ -167,13 +175,25 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         file.close();
     }
 
+    if(previous.isValid()) {
+        auto prevItem = ui->list->item(previous.row(), previous.column());
+
+        if(prevItem != nullptr) {
+            boldenItem(prevItem, false);
+        }
+    }
+
     if(!current.isValid()) {
         return;
     }
 
-    if(ui->list->item(current.row(), current.column()) == nullptr) {
+    auto currItem = ui->list->item(current.row(), current.column());
+
+    if(currItem == nullptr) {
         return;
     }
+
+    boldenItem(currItem, true);
 
     ui->actionDelete_File->setEnabled(true);
 
@@ -200,7 +220,6 @@ void MainWindow::updateList()
             remember = ui->list->currentItem()->text();
         }
     }
-
 
     ui->list->clearContents();
 
@@ -233,11 +252,12 @@ void MainWindow::updateList()
         ui->list->model()->setData(index, icon, Qt::DecorationRole);
 
         if(info.fileName() == remember) {
+            boldenItem(item, true);
             ui->list->setCurrentItem(item);
         }
     }
 
-    ui->list->resizeColumnsToContents();
+    resizeFilesColumns(ui->list);
 
     if(dirChanged) {
         dirChanged = false;
@@ -361,3 +381,4 @@ void MainWindow::on_actionNew_Sibling_Folder_triggered()
     ui->tree->setCurrentIndex(newDir);
 }
 
+} // namespace memory

@@ -1,11 +1,12 @@
-#include "listeventfilter.h"
+#include "eventfilter.h"
 #include <QTableWidget>
 #include <QTreeView>
 #include <QEvent>
 #include <QWheelEvent>
 
+namespace memory {
 
-bool ListEventFilter::eventFilter(QObject *watched, QEvent *event)
+bool EventFilter::eventFilter(QObject *watched, QEvent *event)
 {
     QTableWidget *list = qobject_cast<QTableWidget *>(watched);
     QTreeView *tree = qobject_cast<QTreeView *>(watched);
@@ -42,3 +43,4 @@ bool ListEventFilter::eventFilter(QObject *watched, QEvent *event)
     return QObject::eventFilter(watched, event);
 }
 
+} // namespace memory

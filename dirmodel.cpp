@@ -1,6 +1,8 @@
-#include "memorymodel.h"
+#include "dirmodel.h"
 
-MemoryModel::MemoryModel(const QString &rootPath, QObject *parent)
+namespace memory {
+
+DirModel::DirModel(const QString &rootPath, QObject *parent)
     : QFileSystemModel(parent)
     , mRootPath(rootPath)
 {
@@ -9,7 +11,7 @@ MemoryModel::MemoryModel(const QString &rootPath, QObject *parent)
     setRootPath(mRootPath);
 }
 
-QVariant MemoryModel::data(const QModelIndex &index, int role) const
+QVariant DirModel::data(const QModelIndex &index, int role) const
 {
     if(role ==  Qt::DecorationRole) {
         return QVariant();
@@ -18,13 +20,13 @@ QVariant MemoryModel::data(const QModelIndex &index, int role) const
     return QFileSystemModel::data(index, role);
 }
 
-int MemoryModel::columnCount(const QModelIndex &parent) const
+int DirModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 1;
 }
 
-bool MemoryModel::hasChildren(const QModelIndex &parent) const
+bool DirModel::hasChildren(const QModelIndex &parent) const
 {
     // return false if item cant have children
     if (parent.flags() &  Qt::ItemNeverHasChildren) {
@@ -37,7 +39,7 @@ bool MemoryModel::hasChildren(const QModelIndex &parent) const
                         ).hasNext();
 }
 
-QVariant MemoryModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DirModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(section);
     Q_UNUSED(orientation);
@@ -45,3 +47,5 @@ QVariant MemoryModel::headerData(int section, Qt::Orientation orientation, int r
 
     return QVariant();
 }
+
+} // namespace memory

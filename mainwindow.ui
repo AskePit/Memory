@@ -417,10 +417,8 @@ QTableWidget {
 }
 
 QTableWidget::item:selected {
-	show-decoration-selected: 1;
-	background: #c7dffd;
+	background: white;
 	color: black;
-	border-radius: 2px;
 }</string>
         </property>
         <property name="frameShape">
@@ -497,7 +495,7 @@ QTableWidget::item:selected {
         </attribute>
         <column/>
        </widget>
-       <widget class="QPlainTextEdit" name="field">
+       <widget class="memory::TextEditor" name="field">
         <property name="font">
          <font>
           <family>Consolas</family>
@@ -520,11 +518,8 @@ QTableWidget::item:selected {
         <property name="frameShadow">
          <enum>QFrame::Plain</enum>
         </property>
-        <property name="readOnly">
-         <bool>false</bool>
-        </property>
         <property name="placeholderText">
-         <string>No text</string>
+         <string>No Text</string>
         </property>
        </widget>
       </widget>
@@ -627,6 +622,13 @@ QTableWidget::item:selected {
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>memory::TextEditor</class>
+   <extends>QPlainTextEdit</extends>
+   <header>texteditor.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/resources.qrc"/>
  </resources>
