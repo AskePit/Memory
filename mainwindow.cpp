@@ -91,8 +91,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->tree, &QTreeView::customContextMenuRequested, this, &MainWindow::showTreeContextMenu);
 
     connect(listEventFilter, &ListEventFilter::listResized, this, &MainWindow::updateList);
-    connect(listEventFilter, &ListEventFilter::deleteFile, this, &MainWindow::deleteFile);
-    connect(listEventFilter, &ListEventFilter::deleteDir, this, &MainWindow::deleteDir);
+    connect(listEventFilter, &ListEventFilter::deleteFile, this, &MainWindow::on_actionDelete_File_triggered);
+    connect(listEventFilter, &ListEventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
 
     connect(ui->field, &QPlainTextEdit::textChanged, [=]() {
         fileEdited = true;
@@ -102,7 +102,13 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous);
+    ui->actionDelete_Folder->setEnabled(false);
 
+    if(!current.isValid()) {
+        return;
+    }
+
+    ui->actionDelete_Folder->setEnabled(true);
     files.clear();
 
     QFileInfo i = dirModel->fileInfo(current);
@@ -122,6 +128,7 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous);
+    ui->actionDelete_File->setEnabled(false);
 
     if(!currFileName.isEmpty() && fileEdited) {
         qDebug() << "write";
@@ -140,6 +147,8 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     if(ui->list->item(current.row(), current.column()) == nullptr) {
         return;
     }
+
+    ui->actionDelete_File->setEnabled(true);
 
     ui->field->clear();
 
@@ -217,46 +226,37 @@ MainWindow::~MainWindow()
 
 void MainWindow::showListContextMenu(const QPoint& point)
 {
-    auto item = ui->list->itemAt(point);
-    if(!item) {
-        return;
-    }
-
     QPoint globalPos = ui->list->mapToGlobal(point);
-
     QMenu menu(ui->list);
-    QAction remove(tr("Delete"), this);
-    connect(&remove, &QAction::triggered, [&](bool checked){
-        Q_UNUSED(checked);
-        deleteFile();
-    });
+    menu.addAction(ui->actionNew_File);
+    menu.addAction(ui->actionDelete_File);
 
-    menu.addAction(&remove);
+    auto item = ui->list->itemAt(point);
+    ui->actionDelete_File->setEnabled(item);
+
     menu.exec(globalPos);
 }
 
 void MainWindow::showTreeContextMenu(const QPoint& point)
 {
-    auto index = ui->tree->indexAt(point);
-    if(!index.isValid()) {
-        return;
-    }
-
     QPoint globalPos = ui->tree->mapToGlobal(point);
-
     QMenu menu(ui->tree);
-    QAction remove(tr("Delete"), this);
-    connect(&remove, &QAction::triggered, [&](bool checked){
-        Q_UNUSED(checked);
-        deleteDir();
-    });
+    menu.addAction(ui->actionNew_Child_Folder);
+    menu.addAction(ui->actionNew_Sibling_Folder);
+    menu.addAction(ui->actionDelete_Folder);
 
-    menu.addAction(&remove);
+    auto index = ui->tree->indexAt(point);
+    ui->actionDelete_Folder->setEnabled(index.isValid());
+
     menu.exec(globalPos);
 }
 
-void MainWindow::deleteFile()
+void MainWindow::on_actionDelete_File_triggered()
 {
+    if(!ui->list->currentIndex().isValid()) {
+        return;
+    }
+
     int idx = ui->list->rowCount()*ui->list->currentColumn() + ui->list->currentRow();
 
     int ret = callQuestionDialog(QString("Delete file \"%1\"?").arg(ui->list->currentItem()->text()));
@@ -277,9 +277,12 @@ void MainWindow::deleteFile()
     updateList();
 }
 
-void MainWindow::deleteDir()
+void MainWindow::on_actionDelete_Folder_triggered()
 {
     auto index = ui->tree->currentIndex();
+    if(!index.isValid()) {
+        return;
+    }
 
     int ret = callQuestionDialog(QString("Delete folder \"%1\"?").arg(dirModel->data(index).toString()));
     if(ret != QMessageBox::Ok) {
@@ -309,8 +312,12 @@ void MainWindow::on_actionNew_File_triggered()
     ui->list->setCurrentCell(pos.y(), pos.x());
 }
 
-void MainWindow::on_actionNew_Folder_triggered()
+void MainWindow::on_actionNew_Child_Folder_triggered()
 {
-    QString dirname = getTextDialog("New folder", "Folder name:", this);
-    qDebug() << (dirname.isNull() ? "QString::null" : dirname);
+    QString dirname = getTextDialog("New child folder", "Folder name:", this);
+}
+
+void MainWindow::on_actionNew_Sibling_Folder_triggered()
+{
+    QString dirname = getTextDialog("New sibling folder", "Folder name:", this);
 }

@@ -24,11 +24,15 @@ private slots:
     void showListContextMenu(const QPoint&);
     void showTreeContextMenu(const QPoint&);
     void updateList();
-    void deleteFile();
-    void deleteDir();
+    //void deleteFile();
+    //void deleteDir();
 
     void on_actionNew_File_triggered();
-    void on_actionNew_Folder_triggered();
+    void on_actionNew_Child_Folder_triggered();
+    void on_actionNew_Sibling_Folder_triggered();
+
+    void on_actionDelete_File_triggered();
+    void on_actionDelete_Folder_triggered();
 
 private:
     Ui::MainWindow *ui;

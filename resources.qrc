@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>bullet.png</file>
         <file>new_file.png</file>
-        <file>new_dir.png</file>
+        <file>new_sibling_dir.png</file>
+		<file>new_child_dir.png</file>
     </qresource>
 </RCC>
