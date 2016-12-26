@@ -7,8 +7,10 @@ namespace Ui {
 class MainWindow;
 }
 
-class MemoryModel;
-class ListEventFilter;
+namespace memory {
+
+class DirModel;
+class EventFilter;
 
 class MainWindow : public QMainWindow
 {
@@ -36,13 +38,15 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    MemoryModel *dirModel;
-    ListEventFilter *listEventFilter;
+    DirModel *dirModel;
+    EventFilter *listEventFilter;
     QStringList files;
 
     QString currFileName;
     bool dirChanged;
     bool fileEdited;
 };
+
+} // namespace memory
 
 #endif // MAINWINDOW_H

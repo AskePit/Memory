@@ -3,11 +3,13 @@
 
 #include <QFileSystemModel>
 
-class MemoryModel : public QFileSystemModel
+namespace memory {
+
+class DirModel : public QFileSystemModel
 {
     Q_OBJECT
 public:
-    explicit MemoryModel(const QString &rootPath, QObject *parent = 0);
+    explicit DirModel(const QString &rootPath, QObject *parent = 0);
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -24,5 +26,7 @@ public slots:
 private:
     QString mRootPath;
 };
+
+} // namespace memory
 
 #endif // MEMORYMODEL_H

@@ -14,12 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    memorymodel.cpp \
-    listeventfilter.cpp
+    dirmodel.cpp \
+    eventfilter.cpp \
+    texteditor.cpp
 
 HEADERS  += mainwindow.h \
-    memorymodel.h \
-    listeventfilter.h
+    dirmodel.h \
+    eventfilter.h \
+    texteditor.h
 
 FORMS    += mainwindow.ui
 
