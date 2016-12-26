@@ -418,7 +418,7 @@ QTableWidget {
 
 QTableWidget::item:selected {
 	show-decoration-selected: 1;
-	background: #e7f2f5;
+	background: #c7dffd;
 	color: black;
 	border-radius: 2px;
 }</string>
@@ -564,7 +564,7 @@ QTableWidget::item:selected {
   </widget>
   <action name="actionNew_File">
    <property name="icon">
-    <iconset resource="resources.qrc">
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/new_file.png</normaloff>:/new_file.png</iconset>
    </property>
    <property name="text">
@@ -576,7 +576,7 @@ QTableWidget::item:selected {
   </action>
   <action name="actionNew_Sibling_Folder">
    <property name="icon">
-    <iconset resource="resources.qrc">
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/new_sibling_dir.png</normaloff>:/new_sibling_dir.png</iconset>
    </property>
    <property name="text">
@@ -594,7 +594,7 @@ QTableWidget::item:selected {
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resources.qrc">
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/remove_file.png</normaloff>:/remove_file.png</iconset>
    </property>
    <property name="text">
@@ -606,7 +606,7 @@ QTableWidget::item:selected {
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resources.qrc">
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/remove_dir.png</normaloff>:/remove_dir.png</iconset>
    </property>
    <property name="text">
@@ -615,7 +615,7 @@ QTableWidget::item:selected {
   </action>
   <action name="actionNew_Child_Folder">
    <property name="icon">
-    <iconset resource="resources.qrc">
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/new_child_dir.png</normaloff>:/new_child_dir.png</iconset>
    </property>
    <property name="text">
@@ -628,7 +628,7 @@ QTableWidget::item:selected {
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
