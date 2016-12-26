@@ -4,5 +4,7 @@
         <file>new_file.png</file>
         <file>new_sibling_dir.png</file>
 		<file>new_child_dir.png</file>
+		<file>remove_dir.png</file>
+		<file>remove_file.png</file>
     </qresource>
 </RCC>
