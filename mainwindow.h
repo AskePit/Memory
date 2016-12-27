@@ -7,6 +7,8 @@ namespace Ui {
 class MainWindow;
 }
 
+class QSyntaxHighlighter;
+
 namespace memory {
 
 class DirModel;
@@ -41,10 +43,13 @@ private:
     DirModel *dirModel;
     EventFilter *listEventFilter;
     QStringList files;
+    QSyntaxHighlighter *highlighter;
 
     QString currFileName;
     bool dirChanged;
     bool fileEdited;
+
+    void applyHighlighter();
 };
 
 } // namespace memory

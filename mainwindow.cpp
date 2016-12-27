@@ -3,6 +3,7 @@
 
 #include "dirmodel.h"
 #include "eventfilter.h"
+#include "highlighters/cplusplus.h"
 
 #include <QMessageBox>
 #include <QInputDialog>
@@ -102,6 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     dirModel(new DirModel("../notes", this)),
     listEventFilter(new EventFilter),
+    highlighter(nullptr),
     currFileName(QString::null),
     dirChanged(true),
     fileEdited(false)
@@ -127,7 +129,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listEventFilter, &EventFilter::deleteFile, this, &MainWindow::on_actionDelete_File_triggered);
     connect(listEventFilter, &EventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
 
-    connect(ui->field, &QPlainTextEdit::textChanged, [=]() {
+    connect(ui->field, &QPlainTextEdit::modificationChanged, [=](bool b) {
+        Q_UNUSED(b);
         fileEdited = true;
     });
 }
@@ -166,7 +169,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     ui->actionDelete_File->setEnabled(false);
 
     if(!currFileName.isEmpty() && fileEdited) {
-        qDebug() << "write";
+        //qDebug() << "write";
         QFile file(currFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Truncate);
         QTextStream ss(&file);
@@ -209,6 +212,43 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     file.close();
 
     fileEdited = false;
+
+    applyHighlighter();
+}
+
+void MainWindow::applyHighlighter()
+{
+    QString prefix = "memory::";
+    QString suffix = "Highlighter";
+    QString id;
+    if(highlighter) {
+        id = highlighter->metaObject()->className(); // memory::CppHighlighter
+        id = id.mid(prefix.size());                  // CppHighlighter
+        id.truncate(id.count() - suffix.count());    // Cpp
+    }
+
+    bool doSwitch = false;
+
+    if(currFileName.endsWith(".cpp") || currFileName.endsWith(".h") || currFileName.endsWith(".c")) {
+        doSwitch = (id != "Cpp");
+        id = "Cpp";
+    } else {
+        doSwitch = !id.isEmpty();
+        id.clear();
+    }
+
+    if(!doSwitch) {
+        return;
+    }
+
+    if(highlighter) {
+        delete highlighter;
+        highlighter = nullptr;
+    }
+
+    if(id == "Cpp") {
+        highlighter = new CppHighlighter(ui->field->document());
+    }
 }
 
 void MainWindow::updateList()

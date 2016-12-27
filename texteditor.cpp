@@ -93,8 +93,8 @@ void TextEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             font.setBold(block == textCursor().block());
             painter.setFont(font);*/
 
-            //painter.setPen(QColor(67, 158, 184));
-            painter.setPen(Qt::darkGray);
+            painter.setPen(QColor(67, 158, 184));
+            //painter.setPen(Qt::darkGray);
             painter.drawText(0, top, lineNumberArea->width()-10, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
