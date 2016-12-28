@@ -3,10 +3,12 @@
 namespace memory {
 
 DirModel::DirModel(QObject *parent)
-    : QFileSystemModel(parent)
+    : QSortFilterProxyModel(parent)
+    , _model(this)
 {
-    setFilter(QDir::NoDotAndDotDot|QDir::AllDirs);
-    setResolveSymlinks(true);
+    _model.setFilter(QDir::NoDotAndDotDot|QDir::AllDirs);
+    _model.setResolveSymlinks(true);
+    setSourceModel(&_model);
 }
 
 QVariant DirModel::data(const QModelIndex &index, int role) const
@@ -15,7 +17,7 @@ QVariant DirModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 
-    return QFileSystemModel::data(index, role);
+    return QSortFilterProxyModel::data(index, role);
 }
 
 int DirModel::columnCount(const QModelIndex &parent) const
