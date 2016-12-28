@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -36,7 +37,7 @@ private slots:
     void on_actionDelete_Folder_triggered();
     void on_actionOpen_Folder_triggered();
 
-    void saveCurrentFile();
+    void onQuit();
 
 private:
     Ui::MainWindow *ui;
@@ -44,13 +45,18 @@ private:
     EventFilter *listEventFilter;
     QStringList files;
     QSyntaxHighlighter *highlighter;
+    QSettings settings;
 
     QString currFileName;
     bool dirChanged;
     bool fileEdited;
 
     void applyHighlighter();
+    void changeDir(const QString &path);
+    void saveCurrentFile();
 
+    void saveGeometry();
+    void loadGeometry();
 };
 
 } // namespace memory

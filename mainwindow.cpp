@@ -112,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dirModel(new DirModel(this)),
     listEventFilter(new EventFilter),
     highlighter(nullptr),
+    settings("PitM", "Memory"),
     currFileName(QString::null),
     dirChanged(true),
     fileEdited(false)
@@ -122,6 +123,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listSplitter->setSizes({100, 260});
 
     ui->tree->setModel(dirModel);
+
+    QString path = settings.value("dir", QString()).toString();
+    if(!path.isEmpty()) {
+        changeDir(path);
+    }
     ui->tree->setRootIndex(dirModel->rootIndex());
 
     ui->list->installEventFilter(listEventFilter);
@@ -142,7 +148,54 @@ MainWindow::MainWindow(QWidget *parent) :
         fileEdited = true;
     });
 
-    connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::saveCurrentFile);
+    connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::onQuit);
+
+    loadGeometry();
+}
+
+void MainWindow::saveGeometry()
+{
+    settings.beginGroup("MainWindow");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+
+    auto treeSizes = ui->treeSplitter->sizes();
+    settings.setValue("treeSplit0", treeSizes[0]);
+    settings.setValue("treeSplit1", treeSizes[1]);
+
+    auto listSizes = ui->listSplitter->sizes();
+    settings.setValue("listSplit0", listSizes[0]);
+    settings.setValue("listSplit1", listSizes[1]);
+    settings.endGroup();
+}
+
+void MainWindow::loadGeometry()
+{
+    settings.beginGroup("MainWindow");
+    QSize size = settings.value("size", QSize()).toSize();
+    QPoint pos = settings.value("pos", QPoint()).toPoint();
+    int treeSplit0 = settings.value("treeSplit0", 100).toInt();
+    int treeSplit1 = settings.value("treeSplit1", 260).toInt();
+    int listSplit0 = settings.value("listSplit0", 100).toInt();
+    int listSplit1 = settings.value("listSplit1", 260).toInt();
+
+    if(size.isValid()) {
+        resize(size);
+    }
+
+    if(!pos.isNull()) {
+        move(pos);
+    }
+
+    if(treeSplit0 != -1 && treeSplit1 != -1) {
+        ui->treeSplitter->setSizes({treeSplit0, treeSplit1});
+    }
+
+    if(listSplit0 != -1 && listSplit1 != -1) {
+        ui->listSplitter->setSizes({listSplit0, listSplit1});
+    }
+
+    settings.endGroup();
 }
 
 void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -186,6 +239,12 @@ void MainWindow::saveCurrentFile()
         ss << ui->field->toPlainText();
         file.close();
     }
+}
+
+void MainWindow::onQuit()
+{
+    saveCurrentFile();
+    saveGeometry();
 }
 
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -445,6 +504,11 @@ void MainWindow::on_actionOpen_Folder_triggered()
         return;
     }
 
+    changeDir(path);
+}
+
+void MainWindow::changeDir(const QString &path)
+{
     dirChanged = true;
     clearFilesList(ui->list);
     files.clear();
@@ -456,6 +520,8 @@ void MainWindow::on_actionOpen_Folder_triggered()
     ui->tree->setRootIndex(dirModel->rootIndex());
     ui->tree->setRootIsDecorated(true);
     ui->tree->clearSelection();
+
+    settings.setValue("dir", path);
 }
 
 } // namespace memory
