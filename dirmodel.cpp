@@ -1,4 +1,5 @@
 #include "dirmodel.h"
+#include <QDebug>
 
 namespace memory {
 
@@ -46,6 +47,20 @@ QVariant DirModel::headerData(int section, Qt::Orientation orientation, int role
     Q_UNUSED(role);
 
     return QVariant();
+}
+
+bool DirModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+{
+    QString path = _model.filePath(sourceParent);
+
+    qDebug() << path << _filterRoot;
+    if(path == rootPath() && _model.filePath(sourceParent.child(sourceRow, 0)) != _filterRoot) {
+        return false;
+    }
+    /*if(_model.data(sourceParent.child(sourceRow, 0)).toString() == "c++") {
+        return false;
+    }*/
+    return true;
 }
 
 } // namespace memory
