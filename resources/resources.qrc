@@ -6,5 +6,6 @@
 		<file>new_child_dir.png</file>
 		<file>remove_dir.png</file>
 		<file>remove_file.png</file>
+		<file>open_dir.png</file>
     </qresource>
 </RCC>

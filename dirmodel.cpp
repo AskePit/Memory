@@ -2,18 +2,16 @@
 
 namespace memory {
 
-DirModel::DirModel(const QString &rootPath, QObject *parent)
+DirModel::DirModel(QObject *parent)
     : QFileSystemModel(parent)
-    , mRootPath(rootPath)
 {
     setFilter(QDir::NoDotAndDotDot|QDir::AllDirs);
     setResolveSymlinks(true);
-    setRootPath(mRootPath);
 }
 
 QVariant DirModel::data(const QModelIndex &index, int role) const
 {
-    if(role ==  Qt::DecorationRole) {
+    if(role == Qt::DecorationRole) {
         return QVariant();
     }
 
@@ -29,7 +27,7 @@ int DirModel::columnCount(const QModelIndex &parent) const
 bool DirModel::hasChildren(const QModelIndex &parent) const
 {
     // return false if item cant have children
-    if (parent.flags() &  Qt::ItemNeverHasChildren) {
+    if (parent.flags() & Qt::ItemNeverHasChildren) {
         return false;
     }
     // return if at least one child exists
