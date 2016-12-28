@@ -7,6 +7,7 @@
 
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QFileDialog>
 #include <QDebug>
 
 namespace memory {
@@ -101,7 +102,7 @@ static void boldenItem(QTableWidgetItem *item, bool bold)
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    dirModel(new DirModel("../notes", this)),
+    dirModel(new DirModel(this)),
     listEventFilter(new EventFilter),
     highlighter(nullptr),
     currFileName(QString::null),
@@ -421,4 +422,18 @@ void MainWindow::on_actionNew_Sibling_Folder_triggered()
     ui->tree->setCurrentIndex(newDir);
 }
 
+void MainWindow::on_actionOpen_Folder_triggered()
+{
+    QString path = QFileDialog::getExistingDirectory(this, "Choose root folder", ".");
+    if(path.isEmpty()) {
+        return;
+    }
+
+    dirModel->setRootPath(path);
+    ui->tree->setRootIndex(dirModel->rootIndex());
+    ui->tree->setRootIsDecorated(true);
+}
+
 } // namespace memory
+
+

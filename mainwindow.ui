@@ -538,6 +538,9 @@ QTableWidget::item:selected {
    </property>
   </widget>
   <widget class="QToolBar" name="toolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -550,6 +553,8 @@ QTableWidget::item:selected {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionOpen_Folder"/>
+   <addaction name="separator"/>
    <addaction name="actionNew_File"/>
    <addaction name="actionNew_Child_Folder"/>
    <addaction name="actionNew_Sibling_Folder"/>
@@ -558,6 +563,9 @@ QTableWidget::item:selected {
    <addaction name="actionDelete_Folder"/>
   </widget>
   <action name="actionNew_File">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="resources/resources.qrc">
      <normaloff>:/new_file.png</normaloff>:/new_file.png</iconset>
@@ -570,6 +578,9 @@ QTableWidget::item:selected {
    </property>
   </action>
   <action name="actionNew_Sibling_Folder">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="resources/resources.qrc">
      <normaloff>:/new_sibling_dir.png</normaloff>:/new_sibling_dir.png</iconset>
@@ -609,6 +620,9 @@ QTableWidget::item:selected {
    </property>
   </action>
   <action name="actionNew_Child_Folder">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="resources/resources.qrc">
      <normaloff>:/new_child_dir.png</normaloff>:/new_child_dir.png</iconset>
@@ -618,6 +632,18 @@ QTableWidget::item:selected {
    </property>
    <property name="toolTip">
     <string>New Child Folder</string>
+   </property>
+  </action>
+  <action name="actionOpen_Folder">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/open_dir.png</normaloff>:/open_dir.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Folder...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>
