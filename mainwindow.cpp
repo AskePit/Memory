@@ -52,7 +52,6 @@ static QString getFileNameDialog(const QString &title, const QString &message, Q
     return answer;
 }
 
-
 static void createFile(const QString &fileName)
 {
     QFile f(fileName);
@@ -60,7 +59,7 @@ static void createFile(const QString &fileName)
     f.close();
 }
 
-static QPoint getListPos(QTableWidget *w, const QString &str)
+static QPoint getFilePos(QTableWidget *w, const QString &str)
 {
     QPoint point;
     bool found = false;
@@ -99,7 +98,7 @@ static void resizeFilesColumns(QTableWidget *w)
     }
 }
 
-static void boldenItem(QTableWidgetItem *item, bool bold)
+static void boldenFileItem(QTableWidgetItem *item, bool bold)
 {
     QFont font = item->font();
     font.setBold(bold);
@@ -257,7 +256,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         auto prevItem = ui->list->item(previous.row(), previous.column());
 
         if(prevItem != nullptr) {
-            boldenItem(prevItem, false);
+            boldenFileItem(prevItem, false);
         }
     }
 
@@ -271,7 +270,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         return;
     }
 
-    boldenItem(currItem, true);
+    boldenFileItem(currItem, true);
 
     ui->actionDelete_File->setEnabled(true);
 
@@ -368,7 +367,7 @@ void MainWindow::updateList()
         ui->list->model()->setData(index, icon, Qt::DecorationRole);
 
         if(info.fileName() == remember) {
-            boldenItem(item, true);
+            boldenFileItem(item, true);
             ui->list->setCurrentItem(item);
         }
     }
@@ -471,7 +470,7 @@ void MainWindow::on_actionNew_File_triggered()
     files.sort(Qt::CaseInsensitive);
     updateList();
 
-    QPoint pos = getListPos(ui->list, fileName);
+    QPoint pos = getFilePos(ui->list, fileName);
     ui->list->setCurrentCell(pos.y(), pos.x());
 }
 
@@ -499,7 +498,7 @@ void MainWindow::on_actionNew_Sibling_Folder_triggered()
 
 void MainWindow::on_actionOpen_Folder_triggered()
 {
-    QString path = QFileDialog::getExistingDirectory(this, "Choose root folder", ".");
+    QString path = QFileDialog::getExistingDirectory(this, "Choose root folder", dirModel->rootPath());
     if(path.isEmpty()) {
         return;
     }
@@ -516,9 +515,12 @@ void MainWindow::changeDir(const QString &path)
     fileEdited = false; // prevent from clearing file due to previous line
     currFileName = QString::null;
 
-    dirModel->setRootPath(path);
+    QString parentPath = QFileInfo(path).dir().path();
+    qDebug() << parentPath;
+
+    dirModel->setRootPath(parentPath);
+    dirModel->setFilterRoot(path);
     ui->tree->setRootIndex(dirModel->rootIndex());
-    ui->tree->setRootIsDecorated(true);
     ui->tree->clearSelection();
 
     settings.setValue("dir", path);

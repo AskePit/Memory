@@ -17,7 +17,9 @@ public:
     virtual bool hasChildren(const QModelIndex &parent) const override;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    QModelIndex rootIndex() { return index(rootPath()); }
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+    QModelIndex rootIndex() const { return index(rootPath()); }
 
     // QFileSystemModel forwards
     QString rootPath() const { return _model.rootPath(); }
@@ -28,9 +30,11 @@ public:
     QString filePath(const QModelIndex &index) const { return _model.filePath(mapToSource(index)); }
     QModelIndex mkdir(const QModelIndex &parent, const QString &name) { return mapFromSource(_model.mkdir(mapToSource(parent), name)); }
     QModelIndex setRootPath(const QString &newPath) { return mapFromSource(_model.setRootPath(newPath)); }
+    void setFilterRoot(const QString &root) { beginResetModel(); _filterRoot = root; endResetModel(); }
 
 private:
     QFileSystemModel _model;
+    QString _filterRoot;
 };
 
 } // namespace memory
