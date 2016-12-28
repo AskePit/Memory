@@ -82,6 +82,13 @@ static QPoint getListPos(QTableWidget *w, const QString &str)
     return point;
 }
 
+void clearFilesList(QTableWidget *w)
+{
+    w->clear();
+    w->setRowCount(0);
+    w->setColumnCount(0);
+}
+
 static void resizeFilesColumns(QTableWidget *w)
 {
     const int extraSpace = 15;
@@ -134,6 +141,8 @@ MainWindow::MainWindow(QWidget *parent) :
         Q_UNUSED(b);
         fileEdited = true;
     });
+
+    connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::saveCurrentFile);
 }
 
 void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -141,11 +150,10 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     Q_UNUSED(previous);
     ui->actionDelete_Folder->setEnabled(false);
 
+    clearFilesList(ui->list);
     files.clear();
 
     if(!current.isValid()) {
-        ui->field->clear();
-        ui->list->clear();
         return;
     }
 
@@ -153,7 +161,6 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     ui->actionNew_Sibling_Folder->setEnabled(true);
     ui->actionNew_File->setEnabled(true);
     ui->actionDelete_Folder->setEnabled(true);
-
 
     QFileInfo i = dirModel->fileInfo(current);
     QDir dir(i.filePath());
@@ -169,12 +176,9 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     updateList();
 }
 
-void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
+void MainWindow::saveCurrentFile()
 {
-    ui->actionDelete_File->setEnabled(false);
-
     if(!currFileName.isEmpty() && fileEdited) {
-        //qDebug() << "write";
         QFile file(currFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Truncate);
         QTextStream ss(&file);
@@ -182,6 +186,13 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         ss << ui->field->toPlainText();
         file.close();
     }
+}
+
+void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    ui->actionDelete_File->setEnabled(false);
+
+    saveCurrentFile();
 
     if(previous.isValid()) {
         auto prevItem = ui->list->item(previous.row(), previous.column());
@@ -206,6 +217,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     ui->actionDelete_File->setEnabled(true);
 
     ui->field->clear();
+    fileEdited = false;
 
     int idx = ui->list->rowCount()*current.column() + current.row();
 
@@ -433,9 +445,17 @@ void MainWindow::on_actionOpen_Folder_triggered()
         return;
     }
 
+    dirChanged = true;
+    clearFilesList(ui->list);
+    files.clear();
+    ui->field->clear();
+    fileEdited = false; // prevent from clearing file due to previous line
+    currFileName = QString::null;
+
     dirModel->setRootPath(path);
     ui->tree->setRootIndex(dirModel->rootIndex());
     ui->tree->setRootIsDecorated(true);
+    ui->tree->clearSelection();
 }
 
 } // namespace memory
