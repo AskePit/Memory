@@ -141,15 +141,19 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     Q_UNUSED(previous);
     ui->actionDelete_Folder->setEnabled(false);
 
+    files.clear();
+
     if(!current.isValid()) {
         ui->field->clear();
         ui->list->clear();
-        files.clear();
         return;
     }
 
+    ui->actionNew_Child_Folder->setEnabled(true);
+    ui->actionNew_Sibling_Folder->setEnabled(true);
+    ui->actionNew_File->setEnabled(true);
     ui->actionDelete_Folder->setEnabled(true);
-    files.clear();
+
 
     QFileInfo i = dirModel->fileInfo(current);
     QDir dir(i.filePath());
@@ -435,5 +439,3 @@ void MainWindow::on_actionOpen_Folder_triggered()
 }
 
 } // namespace memory
-
-
