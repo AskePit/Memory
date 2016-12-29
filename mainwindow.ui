@@ -496,6 +496,9 @@ QTableWidget::item:selected {
         <column/>
        </widget>
        <widget class="memory::TextEditor" name="field">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="font">
          <font>
           <family>Consolas</family>
