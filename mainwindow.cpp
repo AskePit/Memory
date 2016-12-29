@@ -246,6 +246,25 @@ void MainWindow::onQuit()
     saveGeometry();
 }
 
+bool isBinary(QFile &f)
+{
+    char c;
+    while(1) {
+        f.getChar(&c);
+
+        if(c == 0) {
+            return true;
+        }
+
+        if(f.atEnd()) {
+            break;
+        }
+    }
+
+    f.seek(0);
+    return false;
+}
+
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     ui->actionDelete_File->setEnabled(false);
@@ -283,11 +302,17 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     currFileName = i.filePath();
     QFile file(currFileName);
     file.open(QIODevice::ReadOnly);
-    ui->field->setPlainText(QString::fromUtf8(file.readAll()));
+
+    if(isBinary(file)) {
+        ui->field->setPlainText("BINARY FILE");
+        ui->field->setDisabled(true);
+    } else {
+        ui->field->setPlainText(QString::fromUtf8(file.readAll()));
+        ui->field->setEnabled(true);
+    }
+
     file.close();
-
     fileEdited = false;
-
     applyHighlighter();
 }
 
@@ -350,13 +375,14 @@ void MainWindow::updateList()
     ui->list->setColumnCount(columns);
 
     for(int i = 0; i<files.count(); ++i) {
-        auto &f = files[i];
-        /*if(f.endsWith(".txt")) {
-            f.truncate(f.count()-4);
-        }*/
+        QString f = files[i];
 
-        QFileInfo info(f);
-        auto item = new QTableWidgetItem(info.fileName());
+        f = QFileInfo(f).fileName();
+        if(f.endsWith(".txt")) {
+            f.truncate(f.count()-4);
+        }
+
+        auto item = new QTableWidgetItem(f);
 
         int row = i%rows;
         int column = i/rows;
@@ -366,7 +392,7 @@ void MainWindow::updateList()
         QPixmap icon(":/bullet.png");
         ui->list->model()->setData(index, icon, Qt::DecorationRole);
 
-        if(info.fileName() == remember) {
+        if(f == remember) {
             boldenFileItem(item, true);
             ui->list->setCurrentItem(item);
         }
@@ -462,6 +488,10 @@ void MainWindow::on_actionNew_File_triggered()
         return;
     }
 
+    if(!fileName.contains('.')) {
+        fileName += ".txt";
+    }
+
     QString dirPath = dirModel->filePath(ui->tree->currentIndex());
     QString newFilePath = dirPath + "/" + fileName;
     createFile(newFilePath);
@@ -498,7 +528,7 @@ void MainWindow::on_actionNew_Sibling_Folder_triggered()
 
 void MainWindow::on_actionOpen_Folder_triggered()
 {
-    QString path = QFileDialog::getExistingDirectory(this, "Choose root folder", dirModel->rootPath());
+    QString path = QFileDialog::getExistingDirectory(this, "Choose root folder", settings.value("dir", ".").toString());
     if(path.isEmpty()) {
         return;
     }
@@ -516,7 +546,6 @@ void MainWindow::changeDir(const QString &path)
     currFileName = QString::null;
 
     QString parentPath = QFileInfo(path).dir().path();
-    qDebug() << parentPath;
 
     dirModel->setRootPath(parentPath);
     dirModel->setFilterRoot(path);

@@ -53,13 +53,10 @@ bool DirModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) 
 {
     QString path = _model.filePath(sourceParent);
 
-    qDebug() << path << _filterRoot;
     if(path == rootPath() && _model.filePath(sourceParent.child(sourceRow, 0)) != _filterRoot) {
         return false;
     }
-    /*if(_model.data(sourceParent.child(sourceRow, 0)).toString() == "c++") {
-        return false;
-    }*/
+
     return true;
 }
 
