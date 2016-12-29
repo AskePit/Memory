@@ -89,12 +89,7 @@ void TextEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
 
-            /*QFont font = painter.font();
-            font.setBold(block == textCursor().block());
-            painter.setFont(font);*/
-
-            painter.setPen(QColor(67, 158, 184));
-            //painter.setPen(Qt::darkGray);
+            painter.setPen(Qt::lightGray);
             painter.drawText(0, top, lineNumberArea->width()-10, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
