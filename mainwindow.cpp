@@ -248,6 +248,10 @@ void MainWindow::onQuit()
 
 bool isBinary(QFile &f)
 {
+    if(f.size() == 0) {
+        return false;
+    }
+
     char c;
     while(1) {
         f.getChar(&c);
