@@ -7,5 +7,7 @@
 		<file>remove_dir.png</file>
 		<file>remove_file.png</file>
 		<file>open_dir.png</file>
+		<file>expand_tree.png</file>
+		<file>collapse_tree.png</file>
     </qresource>
 </RCC>
