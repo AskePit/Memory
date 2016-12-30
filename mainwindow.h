@@ -39,6 +39,10 @@ private slots:
 
     void onQuit();
 
+    void on_actionRename_File_triggered();
+
+    void on_actionRename_Folder_triggered();
+
 private:
     Ui::MainWindow *ui;
     DirModel *dirModel;

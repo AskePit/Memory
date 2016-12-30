@@ -22,10 +22,10 @@ static int callQuestionDialog(const QString &message)
     return msgBox.exec();
 }
 
-static QString getTextDialog(const QString &title, const QString &message, QWidget *parent)
+static QString getTextDialog(const QString &title, const QString &message, const QString &text, QWidget *parent)
 {
     bool ok = false;
-    QString answer = QInputDialog::getText(parent, title, message, QLineEdit::Normal, "", &ok);
+    QString answer = QInputDialog::getText(parent, title, message, QLineEdit::Normal, text, &ok);
     return ok ? answer : QString::null;
 }
 
@@ -42,11 +42,11 @@ static bool isCorrectFileName(const QString &fileName)
     return true;
 }
 
-static QString getFileNameDialog(const QString &title, const QString &message, QWidget *parent)
+static QString getFileNameDialog(const QString &title, const QString &message, const QString &text, QWidget *parent)
 {
-    QString answer = getTextDialog(title, message, parent);
+    QString answer = getTextDialog(title, message, text, parent);
     while(!isCorrectFileName(answer) && !answer.isNull()) {
-        answer = getTextDialog(title, message + " no any of " + forbiddenSymbols, parent);
+        answer = getTextDialog(title, message + " no any of " + forbiddenSymbols, text, parent);
     }
 
     return answer;
@@ -141,6 +141,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listEventFilter, &EventFilter::listResized, this, &MainWindow::updateList);
     connect(listEventFilter, &EventFilter::deleteFile, this, &MainWindow::on_actionDelete_File_triggered);
     connect(listEventFilter, &EventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
+    connect(listEventFilter, &EventFilter::renameFile, this, &MainWindow::on_actionRename_File_triggered);
+    connect(listEventFilter, &EventFilter::renameDir, this, &MainWindow::on_actionRename_Folder_triggered);
 
     connect(ui->field, &QPlainTextEdit::modificationChanged, [=](bool b) {
         Q_UNUSED(b);
@@ -272,6 +274,7 @@ bool isBinary(QFile &f)
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     ui->actionDelete_File->setEnabled(false);
+    ui->actionRename_File->setEnabled(false);
 
     saveCurrentFile();
 
@@ -296,6 +299,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     boldenFileItem(currItem, true);
 
     ui->actionDelete_File->setEnabled(true);
+    ui->actionRename_File->setEnabled(true);
 
     ui->field->clear();
     fileEdited = false;
@@ -355,6 +359,17 @@ void MainWindow::applyHighlighter()
     }
 }
 
+QString getNameForList(const QString &name)
+{
+    QString res = name;
+    res = QFileInfo(res).fileName();
+    if(res.endsWith(".txt")) {
+        res.truncate(res.count()-4);
+    }
+
+    return res;
+}
+
 void MainWindow::updateList()
 {
     QString remember;
@@ -381,10 +396,7 @@ void MainWindow::updateList()
     for(int i = 0; i<files.count(); ++i) {
         QString f = files[i];
 
-        f = QFileInfo(f).fileName();
-        if(f.endsWith(".txt")) {
-            f.truncate(f.count()-4);
-        }
+        f = getNameForList(f);
 
         auto item = new QTableWidgetItem(f);
 
@@ -420,11 +432,13 @@ void MainWindow::showListContextMenu(const QPoint& point)
 {
     QPoint globalPos = ui->list->mapToGlobal(point);
     QMenu menu(ui->list);
+    menu.addAction(ui->actionRename_File);
     menu.addAction(ui->actionNew_File);
     menu.addAction(ui->actionDelete_File);
 
     auto item = ui->list->itemAt(point);
     ui->actionDelete_File->setEnabled(item);
+    ui->actionRename_File->setEnabled(item);
 
     menu.exec(globalPos);
 }
@@ -486,7 +500,7 @@ void MainWindow::on_actionDelete_Folder_triggered()
 
 void MainWindow::on_actionNew_File_triggered()
 {
-    QString fileName = getFileNameDialog("New file", "File name:", this);
+    QString fileName = getFileNameDialog("New file", "File name:", "", this);
 
     if(fileName.isEmpty()) {
         return;
@@ -510,7 +524,7 @@ void MainWindow::on_actionNew_File_triggered()
 
 void MainWindow::on_actionNew_Child_Folder_triggered()
 {
-    QString dirName = getFileNameDialog("New child folder", "Folder name:", this);
+    QString dirName = getFileNameDialog("New child folder", "Folder name:", "", this);
     if(dirName.isEmpty()) {
         return;
     }
@@ -521,7 +535,7 @@ void MainWindow::on_actionNew_Child_Folder_triggered()
 
 void MainWindow::on_actionNew_Sibling_Folder_triggered()
 {
-    QString dirName = getFileNameDialog("New sibling folder", "Folder name:", this);
+    QString dirName = getFileNameDialog("New sibling folder", "Folder name:", "", this);
     if(dirName.isEmpty()) {
         return;
     }
@@ -557,6 +571,47 @@ void MainWindow::changeDir(const QString &path)
     ui->tree->clearSelection();
 
     settings.setValue("dir", path);
+}
+
+void MainWindow::on_actionRename_File_triggered()
+{
+    QString newName = getFileNameDialog("Rename File", "New file name:", getNameForList(currFileName), this);
+    if(newName.isEmpty()) {
+        return;
+    }
+
+    if(!newName.contains('.')) {
+        newName += ".txt";
+    }
+
+    QFile f(currFileName);
+    newName = QFileInfo(currFileName).path() + "/" + newName;
+
+    f.rename(newName);
+
+    for(auto &f : files) {
+        if(f == currFileName) {
+            f = newName;
+            break;
+        }
+    }
+
+    currFileName = newName;
+
+    ui->list->currentItem()->setText(getNameForList(newName));
+}
+
+void MainWindow::on_actionRename_Folder_triggered()
+{
+    QString newName = getFileNameDialog("Rename Folder", "New folder name:", dirModel->fileInfo(ui->tree->currentIndex()).fileName(), this);
+    if(newName.isEmpty()) {
+        return;
+    }
+
+    newName = dirModel->fileInfo(ui->tree->currentIndex()).path() + "/" + newName;
+
+    QFile f(dirModel->filePath(ui->tree->currentIndex()));
+    f.rename(newName);
 }
 
 } // namespace memory

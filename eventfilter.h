@@ -15,6 +15,8 @@ signals:
     void wheeled(int delta);
     void deleteFile();
     void deleteDir();
+    void renameFile();
+    void renameDir();
 };
 
 } // namespace memory
