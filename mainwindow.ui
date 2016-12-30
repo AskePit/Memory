@@ -649,6 +649,25 @@ QTableWidget::item:selected {
     <string>Ctrl+O</string>
    </property>
   </action>
+  <action name="actionRename_File">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Rename...</string>
+   </property>
+   <property name="toolTip">
+    <string>Rename File</string>
+   </property>
+  </action>
+  <action name="actionRename_Folder">
+   <property name="text">
+    <string>Rename...</string>
+   </property>
+   <property name="toolTip">
+    <string>Rename Folder</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
