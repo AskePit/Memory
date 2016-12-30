@@ -157,8 +157,8 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::saveGeometry()
 {
     settings.beginGroup("MainWindow");
-    settings.setValue("size", size());
-    settings.setValue("pos", pos());
+    settings.setValue("geometry", QMainWindow::saveGeometry());
+    settings.setValue("windowState", saveState());
 
     auto treeSizes = ui->treeSplitter->sizes();
     settings.setValue("treeSplit0", treeSizes[0]);
@@ -173,20 +173,10 @@ void MainWindow::saveGeometry()
 void MainWindow::loadGeometry()
 {
     settings.beginGroup("MainWindow");
-    QSize size = settings.value("size", QSize()).toSize();
-    QPoint pos = settings.value("pos", QPoint()).toPoint();
     int treeSplit0 = settings.value("treeSplit0", 100).toInt();
     int treeSplit1 = settings.value("treeSplit1", 260).toInt();
     int listSplit0 = settings.value("listSplit0", 100).toInt();
     int listSplit1 = settings.value("listSplit1", 260).toInt();
-
-    if(size.isValid()) {
-        resize(size);
-    }
-
-    if(!pos.isNull()) {
-        move(pos);
-    }
 
     if(treeSplit0 != -1 && treeSplit1 != -1) {
         ui->treeSplitter->setSizes({treeSplit0, treeSplit1});
@@ -195,6 +185,9 @@ void MainWindow::loadGeometry()
     if(listSplit0 != -1 && listSplit1 != -1) {
         ui->listSplitter->setSizes({listSplit0, listSplit1});
     }
+
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("windowState").toByteArray());
 
     settings.endGroup();
 }
