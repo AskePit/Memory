@@ -615,3 +615,13 @@ void MainWindow::on_actionRename_Folder_triggered()
 }
 
 } // namespace memory
+
+void memory::MainWindow::on_actionExpand_Tree_triggered()
+{
+    ui->tree->expandAll();
+}
+
+void memory::MainWindow::on_actionCollapse_Tree_triggered()
+{
+    ui->tree->collapseAll();
+}

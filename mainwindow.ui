@@ -540,15 +540,31 @@ QTableWidget::item:selected {
     </rect>
    </property>
   </widget>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="toolBar_1">
+   <property name="windowTitle">
+    <string>toolBar_1</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionExpand_Tree"/>
+   <addaction name="actionCollapse_Tree"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_2">
    <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>toolBar_2</string>
    </property>
    <property name="movable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -666,6 +682,36 @@ QTableWidget::item:selected {
    </property>
    <property name="toolTip">
     <string>Rename Folder</string>
+   </property>
+  </action>
+  <action name="actionExpand_Tree">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/expand_tree.png</normaloff>:/expand_tree.png</iconset>
+   </property>
+   <property name="text">
+    <string>Expand Tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Expand Tree</string>
+   </property>
+  </action>
+  <action name="actionCollapse_Tree">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/collapse_tree.png</normaloff>:/collapse_tree.png</iconset>
+   </property>
+   <property name="text">
+    <string>Collapse Tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Collapse Tree</string>
    </property>
   </action>
  </widget>
