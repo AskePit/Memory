@@ -17,13 +17,15 @@ SOURCES += main.cpp\
     dirmodel.cpp \
     eventfilter.cpp \
     texteditor.cpp \
-    highlighters/cplusplus.cpp
+    highlighters/cplusplus.cpp \
+    utils.cpp
 
 HEADERS  += mainwindow.h \
     dirmodel.h \
     eventfilter.h \
     texteditor.h \
-    highlighters/cplusplus.h
+    highlighters/cplusplus.h \
+    utils.h
 
 FORMS    += mainwindow.ui
 
