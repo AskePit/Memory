@@ -40,11 +40,8 @@ private slots:
     void onQuit();
 
     void on_actionRename_File_triggered();
-
     void on_actionRename_Folder_triggered();
-
     void on_actionExpand_Tree_triggered();
-
     void on_actionCollapse_Tree_triggered();
 
 private:
