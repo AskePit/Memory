@@ -3,6 +3,7 @@
 
 #include <QSortFilterProxyModel>
 #include <QFileSystemModel>
+#include <functional>
 
 namespace memory {
 
@@ -24,6 +25,7 @@ public:
     // QFileSystemModel forwards
     QString rootPath() const { return _model.rootPath(); }
     virtual QModelIndex index(const QString &path, int column = 0) const { return mapFromSource(_model.index(path, column)); }
+    virtual QModelIndex index(int row, int column) const { return QSortFilterProxyModel::index(row, column); }
     QDir::Filters filter() const { return _model.filter(); }
     QFileInfo fileInfo(const QModelIndex &index) const { return _model.fileInfo(mapToSource(index)); }
     bool remove(const QModelIndex &index) { return _model.remove(mapToSource(index)); }
@@ -31,6 +33,9 @@ public:
     QModelIndex mkdir(const QModelIndex &parent, const QString &name) { return mapFromSource(_model.mkdir(mapToSource(parent), name)); }
     QModelIndex setRootPath(const QString &newPath) { return mapFromSource(_model.setRootPath(newPath)); }
     void setFilterRoot(const QString &root) { beginResetModel(); _filterRoot = root; endResetModel(); }
+    QString filterRoot() { return _filterRoot; }
+
+    void foreach_index(const std::function<void(const QModelIndex&)> &f, QModelIndex &parent = QModelIndex());
 
 private:
     QFileSystemModel _model;

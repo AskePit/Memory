@@ -151,6 +151,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::onQuit);
 
+    QString pos = settings.value("treePosition", QString()).toString();
+    if(!pos.isEmpty()) {
+        ui->tree->setCurrentIndex(dirModel->index(pos));
+    }
+
     loadGeometry();
 }
 
@@ -167,6 +172,22 @@ void MainWindow::saveGeometry()
     auto listSizes = ui->listSplitter->sizes();
     settings.setValue("listSplit0", listSizes[0]);
     settings.setValue("listSplit1", listSizes[1]);
+
+    QStringList expandedList;
+    dirModel->foreach_index([&](const QModelIndex &index) {
+        if(ui->tree->isExpanded(index)) {
+            QString path = dirModel->filePath(index);  // C:/Some/Path/to/value
+            QString root = dirModel->rootPath();       // C:/Some/Path
+
+            if(path.startsWith(root)) {
+                path = path.mid(root.count()+1);       // to/value
+            }
+
+            expandedList << path;
+        }
+    });
+
+    settings.setValue("expandedList", expandedList);
     settings.endGroup();
 }
 
@@ -188,6 +209,15 @@ void MainWindow::loadGeometry()
 
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
+
+    auto list = settings.value("expandedList").toList();
+    QString root = dirModel->rootPath();
+    for(const auto &elem : list) {
+        QString path = elem.toString();
+        path = QString("%1/%2").arg(root, path);
+        QModelIndex index = dirModel->index(path);
+        ui->tree->setExpanded(index, true);
+    }
 
     settings.endGroup();
 }
@@ -221,6 +251,8 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
 
     dirChanged = true;
     updateList();
+
+    settings.setValue("treePosition", dirModel->filePath(current));
 }
 
 void MainWindow::saveCurrentFile()
@@ -561,6 +593,7 @@ void MainWindow::changeDir(const QString &path)
     dirModel->setRootPath(parentPath);
     dirModel->setFilterRoot(path);
     ui->tree->setRootIndex(dirModel->rootIndex());
+
     ui->tree->clearSelection();
 
     settings.setValue("dir", path);

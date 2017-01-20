@@ -60,4 +60,17 @@ bool DirModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) 
     return true;
 }
 
+void DirModel::foreach_index(const std::function<void(const QModelIndex&)> &f, QModelIndex &parent) {
+    if (!parent.isValid())
+        parent = QSortFilterProxyModel::index(0,0,QModelIndex());
+
+    int numRows = rowCount(parent);
+
+    for (int i=0; i<numRows; i++) {
+        foreach_index(f, QSortFilterProxyModel::index(i,0,parent));
+    }
+
+    f(parent);
+}
+
 } // namespace memory
