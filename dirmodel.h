@@ -35,7 +35,7 @@ public:
     void setFilterRoot(const QString &root) { beginResetModel(); _filterRoot = root; endResetModel(); }
     QString filterRoot() { return _filterRoot; }
 
-    void foreach_index(const std::function<void(const QModelIndex&)> &f, QModelIndex &parent = QModelIndex());
+    void foreach_index(const std::function<void(const QModelIndex&)> &f, QModelIndex &&parent = QModelIndex());
 
 private:
     QFileSystemModel _model;

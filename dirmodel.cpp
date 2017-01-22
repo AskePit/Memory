@@ -60,7 +60,7 @@ bool DirModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) 
     return true;
 }
 
-void DirModel::foreach_index(const std::function<void(const QModelIndex&)> &f, QModelIndex &parent) {
+void DirModel::foreach_index(const std::function<void(const QModelIndex&)> &f, QModelIndex &&parent) {
     if (!parent.isValid())
         parent = QSortFilterProxyModel::index(0,0,QModelIndex());
 
