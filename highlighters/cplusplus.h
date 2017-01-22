@@ -88,6 +88,7 @@ private:
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
+    QTextCharFormat constantFormat;
 };
 
 } // namespace memory
