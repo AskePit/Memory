@@ -358,12 +358,14 @@ void MainWindow::showTreeContextMenu(const QPoint& point)
 {
     QPoint globalPos = ui->tree->mapToGlobal(point);
     QMenu menu(ui->tree);
+    menu.addAction(ui->actionRename_Folder);
     menu.addAction(ui->actionNew_Child_Folder);
     menu.addAction(ui->actionNew_Sibling_Folder);
     menu.addAction(ui->actionDelete_Folder);
 
     auto index = ui->tree->indexAt(point);
     ui->actionDelete_Folder->setEnabled(index.isValid());
+    ui->actionRename_Folder->setEnabled(index.isValid());
 
     menu.exec(globalPos);
 }
