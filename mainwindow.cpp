@@ -3,7 +3,7 @@
 
 #include "dirmodel.h"
 #include "eventfilter.h"
-#include "highlighters/cplusplus.h"
+#include "highlighters/highlighters.h"
 #include "utils.h"
 
 #include <QMessageBox>
@@ -11,8 +11,6 @@
 #include <QDebug>
 
 namespace memory {
-
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -246,11 +244,17 @@ void MainWindow::applyHighlighter()
         id.truncate(id.count() - suffix.count());    // Cpp
     }
 
+    const QString cppId = "Cpp";
+    const QString jsId = "JS";
+
     bool doSwitch = false;
 
     if(currFileName.endsWith(".cpp") || currFileName.endsWith(".h") || currFileName.endsWith(".c")) {
-        doSwitch = (id != "Cpp");
-        id = "Cpp";
+        doSwitch = (id != cppId);
+        id = cppId;
+    } else if(currFileName.endsWith(".js")) {
+        doSwitch = (id != jsId);
+        id = jsId;
     } else {
         doSwitch = !id.isEmpty();
         id.clear();
@@ -265,8 +269,12 @@ void MainWindow::applyHighlighter()
         highlighter = nullptr;
     }
 
-    if(id == "Cpp") {
-        highlighter = new CppHighlighter(ui->field->document());
+    QTextDocument *doc = ui->field->document();
+
+    if(id == cppId) {
+        highlighter = new CppHighlighter(doc);
+    } else if(id == jsId) {
+        highlighter = new JSHighlighter(doc);
     }
 }
 
@@ -513,6 +521,7 @@ void MainWindow::on_actionRename_File_triggered()
     currFileName = newName;
 
     ui->list->currentItem()->setText(getNameForList(newName));
+    applyHighlighter();
 }
 
 void MainWindow::on_actionRename_Folder_triggered()

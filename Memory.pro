@@ -18,14 +18,19 @@ SOURCES += main.cpp\
     eventfilter.cpp \
     texteditor.cpp \
     highlighters/cplusplus.cpp \
-    utils.cpp
+    utils.cpp \
+    highlighters/clike.cpp \
+    highlighters/js.cpp
 
 HEADERS  += mainwindow.h \
     dirmodel.h \
     eventfilter.h \
     texteditor.h \
     highlighters/cplusplus.h \
-    utils.h
+    utils.h \
+    highlighters/clike.h \
+    highlighters/js.h \
+    highlighters/highlighters.h
 
 FORMS    += mainwindow.ui
 
