@@ -82,6 +82,9 @@ QPoint getFilePos(QTableWidget *w, const QString &str)
     for(int c = 0; c<w->columnCount(); ++c) {
         for(int r = 0; r<w->rowCount(); ++r) {
             auto item = w->item(r, c);
+            if(!item) {
+                continue;
+            }
             if(item->text() == str) {
                 point.setY(r);
                 point.setX(c);

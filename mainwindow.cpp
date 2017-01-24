@@ -58,12 +58,25 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::onQuit);
 
-    QString pos = settings.value("treePosition", QString()).toString();
-    if(!pos.isEmpty()) {
-        ui->tree->setCurrentIndex(dirModel->index(pos));
+    loadGeometry();
+
+    QString treePos = settings.value("treePosition", QString()).toString();
+    if(!treePos.isEmpty()) {
+        ui->tree->setCurrentIndex(dirModel->index(treePos));
+        connect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
+    }
+}
+
+void MainWindow::recoverFileAfterListUpdate()
+{
+    QString tablePos = settings.value("tablePosition", QString()).toString();
+    if(!tablePos.isEmpty()) {
+        QPoint pos = getFilePos(ui->list, tablePos);
+        ui->list->setCurrentCell(pos.y(), pos.x());
     }
 
-    loadGeometry();
+    // should be performed once at startup
+    disconnect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
 }
 
 void MainWindow::saveGeometry()
@@ -149,9 +162,9 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     QFileInfo i = dirModel->fileInfo(current);
     QDir dir(i.filePath());
 
-    auto filesInfo = dir.entryInfoList({}, QDir::Files);
+    const auto filesInfo = dir.entryInfoList({}, QDir::Files);
 
-    for(auto &f : filesInfo) {
+    for(const auto &f : filesInfo) {
         QString path = f.filePath();
         files << path;
     }
@@ -231,6 +244,8 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     file.close();
     fileEdited = false;
     applyHighlighter();
+
+    settings.setValue("tablePosition", QFileInfo(currFileName).fileName());
 }
 
 void MainWindow::applyHighlighter()
@@ -340,6 +355,8 @@ void MainWindow::updateList()
     } else {
         connect(ui->list->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
     }
+
+    emit listUpdated();
 }
 
 MainWindow::~MainWindow()
