@@ -23,12 +23,16 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void listUpdated();
+
 private slots:
     void onDirChanged(const QModelIndex &current, const QModelIndex &previous);
     void onFileChanged(const QModelIndex &current, const QModelIndex &previous);
     void showListContextMenu(const QPoint&);
     void showTreeContextMenu(const QPoint&);
     void updateList();
+    void recoverFileAfterListUpdate();
 
     void on_actionNew_File_triggered();
     void on_actionNew_Child_Folder_triggered();
