@@ -9,5 +9,7 @@
 		<file>open_dir.png</file>
 		<file>expand_tree.png</file>
 		<file>collapse_tree.png</file>
+		<file>tray_icon.png</file>
+		<file>window_icon.png</file>
     </qresource>
 </RCC>

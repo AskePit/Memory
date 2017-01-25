@@ -8,6 +8,7 @@
 
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QSystemTrayIcon>
 #include <QDebug>
 
 namespace memory {
@@ -24,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fileEdited(false)
 {
     ui->setupUi(this);
+    setWindowIcon(QIcon(":/window_icon.png"));
 
     ui->treeSplitter->setSizes({100, 260});
     ui->listSplitter->setSizes({100, 260});
@@ -65,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->tree->setCurrentIndex(dirModel->index(treePos));
         connect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
     }
+
+    createTrayIcon();
 }
 
 void MainWindow::recoverFileAfterListUpdate()
@@ -554,14 +558,41 @@ void MainWindow::on_actionRename_Folder_triggered()
     f.rename(newName);
 }
 
-} // namespace memory
-
-void memory::MainWindow::on_actionExpand_Tree_triggered()
+void MainWindow::on_actionExpand_Tree_triggered()
 {
     ui->tree->expandAll();
 }
 
-void memory::MainWindow::on_actionCollapse_Tree_triggered()
+void MainWindow::on_actionCollapse_Tree_triggered()
 {
     ui->tree->collapseAll();
 }
+
+void MainWindow::createTrayIcon()
+{
+    restoreAction = new QAction(tr("&Restore"), this);
+    connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+
+    quitAction = new QAction(tr("&Quit"), this);
+    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+    trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(restoreAction);
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(quitAction);
+
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setContextMenu(trayIconMenu);
+
+    connect(trayIcon, &QSystemTrayIcon::activated, [&](QSystemTrayIcon::ActivationReason reason) {
+        if (reason == QSystemTrayIcon::Trigger) {
+            showNormal();
+        }
+    });
+
+    trayIcon->setIcon(QIcon(":/tray_icon.png"));
+    trayIcon->setToolTip("PitM Memory");
+    trayIcon->show();
+}
+
+} // namespace memory
