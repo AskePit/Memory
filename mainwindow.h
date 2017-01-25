@@ -9,6 +9,9 @@ class MainWindow;
 }
 
 class QSyntaxHighlighter;
+class QAction;
+class QSystemTrayIcon;
+class QMenu;
 
 namespace memory {
 
@@ -66,6 +69,15 @@ private:
 
     void saveGeometry();
     void loadGeometry();
+
+    // tray
+    QAction *restoreAction;
+    QAction *quitAction;
+
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
+
+    void createTrayIcon();
 };
 
 } // namespace memory
