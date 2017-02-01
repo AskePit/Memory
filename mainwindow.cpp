@@ -71,6 +71,12 @@ MainWindow::MainWindow(QWidget *parent) :
     createTrayIcon();
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    onQuit();
+    QMainWindow::closeEvent(event);
+}
+
 void MainWindow::recoverFileAfterListUpdate()
 {
     QString tablePos = settings.value("tablePosition", QString()).toString();
@@ -177,6 +183,8 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     updateList();
 
     settings.setValue("treePosition", dirModel->filePath(current));
+
+    saveCurrentFile();
 }
 
 void MainWindow::saveCurrentFile()

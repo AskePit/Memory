@@ -26,6 +26,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    virtual void closeEvent(QCloseEvent *event) override;
+
 signals:
     void listUpdated();
 
