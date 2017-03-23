@@ -580,6 +580,8 @@ QTableWidget::item:selected {
    <addaction name="separator"/>
    <addaction name="actionDelete_File"/>
    <addaction name="actionDelete_Folder"/>
+   <addaction name="separator"/>
+   <addaction name="actionPrint"/>
   </widget>
   <action name="actionNew_File">
    <property name="enabled">
@@ -712,6 +714,14 @@ QTableWidget::item:selected {
    </property>
    <property name="toolTip">
     <string>Collapse Tree</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="text">
+    <string>Print</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>
