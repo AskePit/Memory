@@ -75,8 +75,14 @@ void createFile(const QString &fileName)
     f.close();
 }
 
-QPoint getFilePos(QTableWidget *w, const QString &str)
+QPoint getFilePos(QTableWidget *w, const QString &_str)
 {
+    QStringRef str(&_str);
+
+    if(str.endsWith(".txt")) {
+        str.truncate(str.length()-4);
+    }
+
     QPoint point;
     bool found = false;
     for(int c = 0; c<w->columnCount(); ++c) {

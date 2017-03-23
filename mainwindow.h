@@ -53,6 +53,7 @@ private slots:
     void on_actionRename_Folder_triggered();
     void on_actionExpand_Tree_triggered();
     void on_actionCollapse_Tree_triggered();
+    void on_actionPrint_triggered();
 
 private:
     Ui::MainWindow *ui;

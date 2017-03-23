@@ -10,6 +10,8 @@
 #include <QFileDialog>
 #include <QSystemTrayIcon>
 #include <QDebug>
+#include <QPrinter>
+#include <QPrintDialog>
 
 namespace memory {
 
@@ -601,6 +603,19 @@ void MainWindow::createTrayIcon()
     trayIcon->setIcon(QIcon(":/tray_icon.png"));
     trayIcon->setToolTip("PitM Memory");
     trayIcon->show();
+}
+
+void MainWindow::on_actionPrint_triggered()
+{
+    QTextDocument *document = ui->field->document()->clone();
+
+    QPrinter printer;
+
+    QPrintDialog *dlg = new QPrintDialog(&printer, this);
+    if (dlg->exec() != QDialog::Accepted)
+        return;
+
+    document->print(&printer);
 }
 
 } // namespace memory
