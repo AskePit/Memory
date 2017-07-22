@@ -10,6 +10,9 @@
     <height>545</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Memory</string>
   </property>
@@ -323,6 +326,9 @@
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
+       <property name="acceptDrops">
+        <bool>true</bool>
+       </property>
        <property name="styleSheet">
         <string notr="true">*{outline: none;}
 
@@ -367,6 +373,18 @@ QTreeView::item:selected {
        </property>
        <property name="lineWidth">
         <number>1</number>
+       </property>
+       <property name="showDropIndicator" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::DragDrop</enum>
+       </property>
+       <property name="defaultDropAction">
+        <enum>Qt::MoveAction</enum>
        </property>
        <property name="rootIsDecorated">
         <bool>true</bool>
@@ -444,6 +462,9 @@ QTableWidget::item:selected {
         </property>
         <property name="showDropIndicator" stdset="0">
          <bool>false</bool>
+        </property>
+        <property name="dragEnabled">
+         <bool>true</bool>
         </property>
         <property name="dragDropOverwriteMode">
          <bool>false</bool>

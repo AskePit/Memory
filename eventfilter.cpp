@@ -36,8 +36,6 @@ bool EventFilter::eventFilter(QObject *watched, QEvent *event)
                 QKeyEvent *k = dynamic_cast<QKeyEvent *>(event);
                 if(k->key() == Qt::Key_Delete) {
                     emit deleteDir();
-                } else if(k->key() == Qt::Key_F2) {
-                    emit renameDir();
                 }
             } break;
             default: break;
