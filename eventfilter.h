@@ -16,7 +16,6 @@ signals:
     void deleteFile();
     void deleteDir();
     void renameFile();
-    void renameDir();
 };
 
 } // namespace memory

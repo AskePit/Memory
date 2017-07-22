@@ -9,7 +9,8 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QSystemTrayIcon>
-#include <QDebug>
+#include <QTextStream>
+#include <QMimeData>
 #include <QPrinter>
 #include <QPrintDialog>
 
@@ -45,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->tree->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onDirChanged);
     connect(ui->list->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
+    connect(dirModel, &DirModel::fileMoved, [this](){ onDirChanged(ui->tree->currentIndex(), QModelIndex()); });
 
     connect(ui->list, &QTableWidget::customContextMenuRequested, this, &MainWindow::showListContextMenu);
     connect(ui->tree, &QTreeView::customContextMenuRequested, this, &MainWindow::showTreeContextMenu);
@@ -53,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listEventFilter, &EventFilter::deleteFile, this, &MainWindow::on_actionDelete_File_triggered);
     connect(listEventFilter, &EventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
     connect(listEventFilter, &EventFilter::renameFile, this, &MainWindow::on_actionRename_File_triggered);
-    connect(listEventFilter, &EventFilter::renameDir, this, &MainWindow::on_actionRename_Folder_triggered);
 
     connect(ui->field, &QPlainTextEdit::modificationChanged, [=](bool b) {
         Q_UNUSED(b);
@@ -182,9 +183,11 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     }
 
     dirChanged = true;
+    QString currentPath { dirModel->filePath(current) };
+    dirModel->setCurrentPath(currentPath);
     updateList();
 
-    settings.setValue("treePosition", dirModel->filePath(current));
+    settings.setValue("treePosition", currentPath);
 
     saveCurrentFile();
 }
@@ -442,7 +445,7 @@ void MainWindow::on_actionDelete_Folder_triggered()
         return;
     }
 
-    int ret = callQuestionDialog(QString("Delete folder \"%1\"?").arg(dirModel->data(index).toString()));
+    int ret = callQuestionDialog(QString("Delete folder \"%1\"?").arg(dirModel->fileName(index)));
     if(ret != QMessageBox::Ok) {
         return;
     }
@@ -619,3 +622,4 @@ void MainWindow::on_actionPrint_triggered()
 }
 
 } // namespace memory
+
