@@ -54,6 +54,7 @@ private slots:
     void on_actionExpand_Tree_triggered();
     void on_actionCollapse_Tree_triggered();
     void on_actionPrint_triggered();
+    void on_actionSave_triggered();
 
 private:
     Ui::MainWindow *ui;
