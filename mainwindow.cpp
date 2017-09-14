@@ -96,7 +96,6 @@ void MainWindow::saveGeometry()
 {
     settings.beginGroup("MainWindow");
     settings.setValue("geometry", QMainWindow::saveGeometry());
-    settings.setValue("windowState", saveState());
 
     auto treeSizes = ui->treeSplitter->sizes();
     settings.setValue("treeSplit0", treeSizes[0]);
@@ -140,8 +139,8 @@ void MainWindow::loadGeometry()
         ui->listSplitter->setSizes({listSplit0, listSplit1});
     }
 
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("windowState").toByteArray());
+    auto g = settings.value("geometry").toByteArray();
+    restoreGeometry(g);
 
     auto list = settings.value("expandedList").toList();
     QString root = dirModel->rootPath();
