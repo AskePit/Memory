@@ -44,6 +44,9 @@
       <property name="lineWidth">
        <number>0</number>
       </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
       <property name="handleWidth">
        <number>1</number>
       </property>
@@ -434,6 +437,17 @@ QTableWidget::item:selected {
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

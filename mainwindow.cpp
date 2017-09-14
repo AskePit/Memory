@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fileEdited(false)
 {
     ui->setupUi(this);
+    addAction(ui->actionSave);
     setWindowIcon(QIcon(":/window_icon.png"));
 
     ui->treeSplitter->setSizes({100, 260});
@@ -621,5 +622,9 @@ void MainWindow::on_actionPrint_triggered()
     document->print(&printer);
 }
 
-} // namespace memory
+void MainWindow::on_actionSave_triggered()
+{
+    saveCurrentFile();
+}
 
+} // namespace memory
