@@ -9,23 +9,17 @@ CppHighlighter::CppHighlighter(QTextDocument *parent)
     /// PREPROCESSOR
     ////
 
-    QTextCharFormat ppFormat;
-    ppFormat.setForeground(QColor(45, 45, 45));
-    ppFormat.setFontWeight(QFont::Bold);
-    QStringList ppPatterns = {
+    m_ppDirectives = QStringList {
         "define","undef", "include", "if", "ifdef", "ifndef", "else",
         "elif", "endif", "line", "error", "warning", "pragma"
     };
-    applyList(ppPatterns, ppFormat, "^\\s*#%1\\b");
 
 
     //////
     /// KEYWORDS
     ////
 
-    QTextCharFormat keywordFormat;
-    keywordFormat.setForeground(QColor(0, 128, 0));
-    QStringList keywordPatterns = {
+    m_keywords = QStringList {
         "alignas", "alignof", "and", "and_eq", "asm", "auto",
         "bitand", "bitor", "bool", "break",
         "case", "catch", "char", "char16_t", "char32_t", "class", "compl", "const", "constexpr", "const_cast", "continue",
@@ -46,16 +40,12 @@ CppHighlighter::CppHighlighter(QTextDocument *parent)
         "virtual", "void", "volatile",
         "wchar_t", "while", "xor", "xor_eq",
     };
-    applyList(keywordPatterns, keywordFormat, "\\b%1\\b");
-
 
     //////
     /// CLASSNAMES
     ////
 
-    QTextCharFormat classFormat;
-    classFormat.setForeground(Qt::darkMagenta);
-    QStringList classPatterns = {
+    m_classnames = QStringList {
         "std",
         "double_t",
         "float_t",
@@ -175,9 +165,6 @@ CppHighlighter::CppHighlighter(QTextDocument *parent)
         "mask_array",
         "indirect_array",
     };
-    applyList(classPatterns, classFormat, "\\b%1\\b");
-
-    addRule(classFormat, "\\bQ[A-Za-z]+\\b");
 }
 
 } // namespace memory

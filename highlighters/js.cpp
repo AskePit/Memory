@@ -8,10 +8,7 @@ JSHighlighter::JSHighlighter(QTextDocument *parent)
     //////
     /// KEYWORDS
     ////
-
-    QTextCharFormat keywordFormat;
-    keywordFormat.setForeground(QColor(0, 128, 0));
-    QStringList keywordPatterns = {
+    m_keywords = QStringList {
         "abstract",
         "arguments",
         "await",
@@ -78,16 +75,12 @@ JSHighlighter::JSHighlighter(QTextDocument *parent)
         "with",
         "yield",
     };
-    applyList(keywordPatterns, keywordFormat, "\\b%1\\b");
 
 
     //////
     /// CLASSNAMES
     ////
-
-    QTextCharFormat classFormat;
-    classFormat.setForeground(Qt::darkMagenta);
-    QStringList classPatterns = {
+    m_classnames = QStringList {
         "Array",
         "Date",
         "hasOwnProperty",
@@ -210,7 +203,6 @@ JSHighlighter::JSHighlighter(QTextDocument *parent)
         "onmousedown",
         "onsubmit",
     };
-    applyList(classPatterns, classFormat, "\\b%1\\b");
 }
 
 } // namespace memory
