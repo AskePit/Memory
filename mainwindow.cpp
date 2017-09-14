@@ -349,6 +349,7 @@ void MainWindow::updateList()
         f = getNameForList(f);
 
         auto item = new QTableWidgetItem(f);
+        item->setToolTip(f);
 
         int row = i%rows;
         int column = i/rows;
