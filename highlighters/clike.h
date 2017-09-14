@@ -20,25 +20,21 @@ public:
 protected:
     virtual void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
-    void addRule(const QTextCharFormat &format, const QString &regexp);
-    void applyList(const QStringList &list, const QTextCharFormat &format, const QString &regexp);
-
-    struct HighlightingRule
-    {
-        QRegExp pattern;
-        QTextCharFormat format;
+    enum class HighlightElement {
+        Keyword,
+        Classname,
+        String,
+        Comment,
+        Literal,
+        Preprocessor,
     };
-    QVector<HighlightingRule> highlightingRules;
 
-    QRegExp commentStartExpression;
-    QRegExp commentEndExpression;
-    QTextCharFormat singleLineCommentFormat;
-    QTextCharFormat multiLineCommentFormat;
-
-    QTextCharFormat quotationFormat;
-    QTextCharFormat functionFormat;
-    QTextCharFormat constantFormat;
+    QMap<HighlightElement, QTextCharFormat> m_colors;
+    QStringList m_keywords;
+    QStringList m_classnames;
+    QStringList m_ppDirectives;
 };
+
 
 } // namespace memory
 
