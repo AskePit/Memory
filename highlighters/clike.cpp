@@ -15,7 +15,7 @@ CLikeHighlighter::CLikeHighlighter(QTextDocument *parent)
     KeywordFormat.setForeground(QColor(0, 0, 255));
     ClassnameFormat.setForeground(QColor(30, 130, 160));
     StringFormat.setForeground(Qt::darkGreen);
-    CommentFormat.setForeground(QColor(43, 145, 175));
+    CommentFormat.setForeground(Qt::darkGreen);
     LiteralFormat.setForeground(QColor(0, 0, 170));
     PreprocessorFormat.setForeground(QColor(128, 128, 128));
 
