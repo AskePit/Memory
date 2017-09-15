@@ -3,13 +3,15 @@
         <file>bullet.png</file>
         <file>new_file.png</file>
         <file>new_sibling_dir.png</file>
-		<file>new_child_dir.png</file>
-		<file>remove_dir.png</file>
-		<file>remove_file.png</file>
-		<file>open_dir.png</file>
-		<file>expand_tree.png</file>
-		<file>collapse_tree.png</file>
-		<file>tray_icon.png</file>
-		<file>window_icon.png</file>
+        <file>new_child_dir.png</file>
+        <file>remove_dir.png</file>
+        <file>remove_file.png</file>
+        <file>open_dir.png</file>
+        <file>expand_tree.png</file>
+        <file>collapse_tree.png</file>
+        <file>tray_icon.png</file>
+        <file>window_icon.png</file>
+        <file>print_file.png</file>
+        <file>save_file.png</file>
     </qresource>
 </RCC>
