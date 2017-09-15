@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     highlighters/cplusplus.cpp \
     utils.cpp \
     highlighters/clike.cpp \
-    highlighters/js.cpp
+    highlighters/js.cpp \
+    highlighters/tab.cpp
 
 HEADERS  += mainwindow.h \
     dirmodel.h \
@@ -30,7 +31,8 @@ HEADERS  += mainwindow.h \
     utils.h \
     highlighters/clike.h \
     highlighters/js.h \
-    highlighters/highlighters.h
+    highlighters/highlighters.h \
+    highlighters/tab.h
 
 FORMS    += mainwindow.ui
 
