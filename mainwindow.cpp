@@ -278,15 +278,21 @@ void MainWindow::applyHighlighter()
 
     const QString cppId = "Cpp";
     const QString jsId = "JS";
+    const QString tabId = "Tab";
 
     bool doSwitch = false;
 
-    if(currFileName.endsWith(".cpp") || currFileName.endsWith(".h") || currFileName.endsWith(".c")) {
+    auto c = Qt::CaseInsensitive;
+
+    if(currFileName.endsWith(".cpp", c) || currFileName.endsWith(".h", c) || currFileName.endsWith(".c", c)) {
         doSwitch = (id != cppId);
         id = cppId;
-    } else if(currFileName.endsWith(".js")) {
+    } else if(currFileName.endsWith(".js", c)) {
         doSwitch = (id != jsId);
         id = jsId;
+    } else if(currFileName.endsWith(".tab", c)) {
+        doSwitch = (id != tabId);
+        id = tabId;
     } else {
         doSwitch = !id.isEmpty();
         id.clear();
@@ -307,6 +313,8 @@ void MainWindow::applyHighlighter()
         highlighter = new CppHighlighter(doc);
     } else if(id == jsId) {
         highlighter = new JSHighlighter(doc);
+    } else if(id == tabId) {
+        highlighter = new TabHighlighter(doc);
     }
 }
 
