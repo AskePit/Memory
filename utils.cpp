@@ -4,6 +4,7 @@
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QTableWidget>
+#include <QCoreApplication>
 
 bool isBinary(QFile &f)
 {
@@ -45,7 +46,7 @@ static QString getTextDialog(const QString &title, const QString &message, const
     return ok ? answer : QString::null;
 }
 
-static const QString forbiddenSymbols = "\":/\\*?<>|";
+static const QString forbiddenSymbols("\":/\\*?<>|");
 
 static bool isCorrectFileName(const QString &fileName)
 {
@@ -62,7 +63,7 @@ QString getFileNameDialog(const QString &title, const QString &message, const QS
 {
     QString answer = getTextDialog(title, message, text, parent);
     while(!isCorrectFileName(answer) && !answer.isNull()) {
-        answer = getTextDialog(title, message + " no any of " + forbiddenSymbols, text, parent);
+        answer = getTextDialog(title, message + QCoreApplication::translate("GLOBAL", " no any of ") + forbiddenSymbols, text, parent);
     }
 
     return answer;
@@ -79,7 +80,7 @@ QPoint getFilePos(QTableWidget *w, const QString &_str)
 {
     QStringRef str(&_str);
 
-    if(str.endsWith(".txt")) {
+    if(str.endsWith(QLatin1String(".txt"))) {
         str.truncate(str.length()-4);
     }
 

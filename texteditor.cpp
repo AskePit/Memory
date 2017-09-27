@@ -14,7 +14,7 @@ TextEditor::TextEditor(QWidget *parent)
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
 
-    QFont font = QFont("Consolas", 10);
+    QFont font = QFont(QStringLiteral("Consolas"), 10);
     setFont(font);
 
     const int tabStop = 4;

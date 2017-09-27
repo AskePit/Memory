@@ -22,21 +22,21 @@ MainWindow::MainWindow(QWidget *parent) :
     dirModel(new DirModel(this)),
     listEventFilter(new EventFilter),
     highlighter(nullptr),
-    settings("PitM", "Memory"),
+    settings(QStringLiteral("PitM"), QStringLiteral("Memory")),
     currFileName(QString::null),
     dirChanged(true),
     fileEdited(false)
 {
     ui->setupUi(this);
     addAction(ui->actionSave);
-    setWindowIcon(QIcon(":/window_icon.png"));
+    setWindowIcon(QIcon(QStringLiteral(":/window_icon.png")));
 
     ui->treeSplitter->setSizes({100, 260});
     ui->listSplitter->setSizes({100, 260});
 
     ui->tree->setModel(dirModel);
 
-    QString path = settings.value("dir", QString()).toString();
+    QString path = settings.value(QStringLiteral("dir"), QString()).toString();
     if(!path.isEmpty()) {
         changeDir(path);
     }
@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     loadGeometry();
 
-    QString treePos = settings.value("treePosition", QString()).toString();
+    QString treePos = settings.value(QStringLiteral("treePosition"), QString()).toString();
     if(!treePos.isEmpty()) {
         ui->tree->setCurrentIndex(dirModel->index(treePos));
         connect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
@@ -83,7 +83,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::recoverFileAfterListUpdate()
 {
-    QString tablePos = settings.value("tablePosition", QString()).toString();
+    QString tablePos = settings.value(QStringLiteral("tablePosition"), QString()).toString();
     if(!tablePos.isEmpty()) {
         QPoint pos = getFilePos(ui->list, tablePos);
         ui->list->setCurrentCell(pos.y(), pos.x());
@@ -95,16 +95,16 @@ void MainWindow::recoverFileAfterListUpdate()
 
 void MainWindow::saveGeometry()
 {
-    settings.beginGroup("MainWindow");
-    settings.setValue("geometry", QMainWindow::saveGeometry());
+    settings.beginGroup(QStringLiteral("MainWindow"));
+    settings.setValue(QStringLiteral("geometry"), QMainWindow::saveGeometry());
 
     auto treeSizes = ui->treeSplitter->sizes();
-    settings.setValue("treeSplit0", treeSizes[0]);
-    settings.setValue("treeSplit1", treeSizes[1]);
+    settings.setValue(QStringLiteral("treeSplit0"), treeSizes[0]);
+    settings.setValue(QStringLiteral("treeSplit1"), treeSizes[1]);
 
     auto listSizes = ui->listSplitter->sizes();
-    settings.setValue("listSplit0", listSizes[0]);
-    settings.setValue("listSplit1", listSizes[1]);
+    settings.setValue(QStringLiteral("listSplit0"), listSizes[0]);
+    settings.setValue(QStringLiteral("listSplit1"), listSizes[1]);
 
     QStringList expandedList;
     dirModel->foreach_index([&](const QModelIndex &index) {
@@ -120,17 +120,17 @@ void MainWindow::saveGeometry()
         }
     });
 
-    settings.setValue("expandedList", expandedList);
+    settings.setValue(QStringLiteral("expandedList"), expandedList);
     settings.endGroup();
 }
 
 void MainWindow::loadGeometry()
 {
-    settings.beginGroup("MainWindow");
-    int treeSplit0 = settings.value("treeSplit0", 100).toInt();
-    int treeSplit1 = settings.value("treeSplit1", 260).toInt();
-    int listSplit0 = settings.value("listSplit0", 100).toInt();
-    int listSplit1 = settings.value("listSplit1", 260).toInt();
+    settings.beginGroup(QStringLiteral("MainWindow"));
+    int treeSplit0 = settings.value(QStringLiteral("treeSplit0"), 100).toInt();
+    int treeSplit1 = settings.value(QStringLiteral("treeSplit1"), 260).toInt();
+    int listSplit0 = settings.value(QStringLiteral("listSplit0"), 100).toInt();
+    int listSplit1 = settings.value(QStringLiteral("listSplit1"), 260).toInt();
 
     if(treeSplit0 != -1 && treeSplit1 != -1) {
         ui->treeSplitter->setSizes({treeSplit0, treeSplit1});
@@ -140,10 +140,10 @@ void MainWindow::loadGeometry()
         ui->listSplitter->setSizes({listSplit0, listSplit1});
     }
 
-    auto g = settings.value("geometry").toByteArray();
+    auto g = settings.value(QStringLiteral("geometry")).toByteArray();
     restoreGeometry(g);
 
-    auto list = settings.value("expandedList").toList();
+    auto list = settings.value(QStringLiteral("expandedList")).toList();
     QString root = dirModel->rootPath();
     for(const auto &elem : list) {
         QString path = elem.toString();
@@ -187,7 +187,7 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
     dirModel->setCurrentPath(currentPath);
     updateList();
 
-    settings.setValue("treePosition", currentPath);
+    settings.setValue(QStringLiteral("treePosition"), currentPath);
 
     saveCurrentFile();
 }
@@ -251,7 +251,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     file.open(QIODevice::ReadOnly);
 
     if(isBinary(file)) {
-        ui->field->setPlainText("BINARY FILE");
+        ui->field->setPlainText(tr("BINARY FILE"));
         ui->field->setDisabled(true);
     } else {
         ui->field->setPlainText(QString::fromUtf8(file.readAll()));
@@ -262,13 +262,13 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     fileEdited = false;
     applyHighlighter();
 
-    settings.setValue("tablePosition", QFileInfo(currFileName).fileName());
+    settings.setValue(QStringLiteral("tablePosition"), QFileInfo(currFileName).fileName());
 }
 
 void MainWindow::applyHighlighter()
 {
-    QString prefix = "memory::";
-    QString suffix = "Highlighter";
+    QString prefix("memory::");
+    QString suffix("Highlighter");
     QString id;
     if(highlighter) {
         id = highlighter->metaObject()->className(); // memory::CppHighlighter
@@ -276,21 +276,21 @@ void MainWindow::applyHighlighter()
         id.truncate(id.count() - suffix.count());    // Cpp
     }
 
-    const QString cppId = "Cpp";
-    const QString jsId = "JS";
-    const QString tabId = "Tab";
+    const QString cppId("Cpp");
+    const QString jsId("JS");
+    const QString tabId("Tab");
 
     bool doSwitch = false;
 
     auto c = Qt::CaseInsensitive;
 
-    if(currFileName.endsWith(".cpp", c) || currFileName.endsWith(".h", c) || currFileName.endsWith(".c", c)) {
+    if(currFileName.endsWith(QLatin1String(".cpp"), c) || currFileName.endsWith(QLatin1String(".h"), c) || currFileName.endsWith(QLatin1String(".c"), c)) {
         doSwitch = (id != cppId);
         id = cppId;
-    } else if(currFileName.endsWith(".js", c)) {
+    } else if(currFileName.endsWith(QLatin1String(".js"), c)) {
         doSwitch = (id != jsId);
         id = jsId;
-    } else if(currFileName.endsWith(".tab", c)) {
+    } else if(currFileName.endsWith(QLatin1String(".tab"), c)) {
         doSwitch = (id != tabId);
         id = tabId;
     } else {
@@ -322,7 +322,7 @@ QString getNameForList(const QString &name)
 {
     QString res = name;
     res = QFileInfo(res).fileName();
-    if(res.endsWith(".txt")) {
+    if(res.endsWith(QLatin1String(".txt"))) {
         res.truncate(res.count()-4);
     }
 
@@ -365,7 +365,7 @@ void MainWindow::updateList()
         ui->list->setItem(row, column, item);
 
         QModelIndex index = ui->list->model()->index(row, column);
-        QPixmap icon(":/bullet.png");
+        QPixmap icon(QStringLiteral(":/bullet.png"));
         ui->list->model()->setData(index, icon, Qt::DecorationRole);
 
         if(f == remember) {
@@ -429,7 +429,7 @@ void MainWindow::on_actionDelete_File_triggered()
 
     int idx = ui->list->rowCount()*ui->list->currentColumn() + ui->list->currentRow();
 
-    int ret = callQuestionDialog(QString("Delete file \"%1\"?").arg(ui->list->currentItem()->text()));
+    int ret = callQuestionDialog(tr("Delete file \"%1\"?").arg(ui->list->currentItem()->text()));
     if(ret != QMessageBox::Ok) {
         return;
     }
@@ -454,7 +454,7 @@ void MainWindow::on_actionDelete_Folder_triggered()
         return;
     }
 
-    int ret = callQuestionDialog(QString("Delete folder \"%1\"?").arg(dirModel->fileName(index)));
+    int ret = callQuestionDialog(tr("Delete folder \"%1\"?").arg(dirModel->fileName(index)));
     if(ret != QMessageBox::Ok) {
         return;
     }
@@ -464,18 +464,18 @@ void MainWindow::on_actionDelete_Folder_triggered()
 
 void MainWindow::on_actionNew_File_triggered()
 {
-    QString fileName = getFileNameDialog("New file", "File name:", "", this);
+    QString fileName = getFileNameDialog(tr("New file"), tr("File name:"), QStringLiteral(""), this);
 
     if(fileName.isEmpty()) {
         return;
     }
 
     if(!fileName.contains('.')) {
-        fileName += ".txt";
+        fileName += QLatin1String(".txt");
     }
 
     QString dirPath = dirModel->filePath(ui->tree->currentIndex());
-    QString newFilePath = dirPath + "/" + fileName;
+    QString newFilePath = dirPath + QDir::separator() + fileName;
     createFile(newFilePath);
 
     files << newFilePath;
@@ -488,7 +488,7 @@ void MainWindow::on_actionNew_File_triggered()
 
 void MainWindow::on_actionNew_Child_Folder_triggered()
 {
-    QString dirName = getFileNameDialog("New child folder", "Folder name:", "", this);
+    QString dirName = getFileNameDialog(tr("New child folder"), tr("Folder name:"), QStringLiteral(""), this);
     if(dirName.isEmpty()) {
         return;
     }
@@ -499,7 +499,7 @@ void MainWindow::on_actionNew_Child_Folder_triggered()
 
 void MainWindow::on_actionNew_Sibling_Folder_triggered()
 {
-    QString dirName = getFileNameDialog("New sibling folder", "Folder name:", "", this);
+    QString dirName = getFileNameDialog(tr("New sibling folder"), tr("Folder name:"), QStringLiteral(""), this);
     if(dirName.isEmpty()) {
         return;
     }
@@ -510,7 +510,7 @@ void MainWindow::on_actionNew_Sibling_Folder_triggered()
 
 void MainWindow::on_actionOpen_Folder_triggered()
 {
-    QString path = QFileDialog::getExistingDirectory(this, "Choose root folder", settings.value("dir", ".").toString());
+    QString path = QFileDialog::getExistingDirectory(this, tr("Choose root folder"), settings.value(QStringLiteral("dir"), QLatin1String(".")).toString());
     if(path.isEmpty()) {
         return;
     }
@@ -535,22 +535,22 @@ void MainWindow::changeDir(const QString &path)
 
     ui->tree->clearSelection();
 
-    settings.setValue("dir", path);
+    settings.setValue(QStringLiteral("dir"), path);
 }
 
 void MainWindow::on_actionRename_File_triggered()
 {
-    QString newName = getFileNameDialog("Rename File", "New file name:", getNameForList(currFileName), this);
+    QString newName = getFileNameDialog(tr("Rename File"), tr("New file name:"), getNameForList(currFileName), this);
     if(newName.isEmpty()) {
         return;
     }
 
     if(!newName.contains('.')) {
-        newName += ".txt";
+        newName += QLatin1String(".txt");
     }
 
     QFile f(currFileName);
-    newName = QFileInfo(currFileName).path() + "/" + newName;
+    newName = QFileInfo(currFileName).path() + QDir::separator() + newName;
 
     f.rename(newName);
 
@@ -569,12 +569,12 @@ void MainWindow::on_actionRename_File_triggered()
 
 void MainWindow::on_actionRename_Folder_triggered()
 {
-    QString newName = getFileNameDialog("Rename Folder", "New folder name:", dirModel->fileInfo(ui->tree->currentIndex()).fileName(), this);
+    QString newName = getFileNameDialog(tr("Rename Folder"), tr("New folder name:"), dirModel->fileInfo(ui->tree->currentIndex()).fileName(), this);
     if(newName.isEmpty()) {
         return;
     }
 
-    newName = dirModel->fileInfo(ui->tree->currentIndex()).path() + "/" + newName;
+    newName = dirModel->fileInfo(ui->tree->currentIndex()).path() + QDir::separator() + newName;
 
     QFile f(dirModel->filePath(ui->tree->currentIndex()));
     f.rename(newName);
@@ -612,8 +612,8 @@ void MainWindow::createTrayIcon()
         }
     });
 
-    trayIcon->setIcon(QIcon(":/tray_icon.png"));
-    trayIcon->setToolTip("PitM Memory");
+    trayIcon->setIcon(QIcon(QStringLiteral(":/tray_icon.png")));
+    trayIcon->setToolTip(QStringLiteral("PitM Memory"));
     trayIcon->show();
 }
 
