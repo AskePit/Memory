@@ -58,7 +58,7 @@ bool DirModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int
         return false;
     }
 
-    if(data->hasFormat("application/x-qabstractitemmodeldatalist")) {
+    if(data->hasFormat(QStringLiteral("application/x-qabstractitemmodeldatalist"))) {
         return true;
     }
     return QSortFilterProxyModel::canDropMimeData(data, action, row, column, parent);
@@ -66,8 +66,8 @@ bool DirModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int
 
 bool DirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    if(data->hasFormat("application/x-qabstractitemmodeldatalist")) {
-        QByteArray encoded = data->data("application/x-qabstractitemmodeldatalist");
+    if(data->hasFormat(QStringLiteral("application/x-qabstractitemmodeldatalist"))) {
+        QByteArray encoded = data->data(QStringLiteral("application/x-qabstractitemmodeldatalist"));
         QDataStream stream(&encoded, QIODevice::ReadOnly);
 
         QList<QUrl> urls;

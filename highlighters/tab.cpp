@@ -16,9 +16,9 @@ TabHighlighter::TabHighlighter(QTextDocument *parent)
     SpecialFormat.setForeground(QColor(100, 100, 100));
 
     m_rules = {
-        { HighlightElement::Dash, {DashFormat, "[-–—|]{1,}"} },
-        { HighlightElement::Number, {NumberFormat, "\\d{1,}"} },
-        { HighlightElement::Special, {SpecialFormat, "\\b[A-Ze]\\b|#|[^\\s\\w\\d-–—|]"} },
+        { HighlightElement::Dash, {DashFormat, QStringLiteral("[-–—|]{1,}")} },
+        { HighlightElement::Number, {NumberFormat, QStringLiteral("\\d{1,}")} },
+        { HighlightElement::Special, {SpecialFormat, QStringLiteral("\\b[A-Ze]\\b|#|[^\\s\\w\\d-–—|]")} },
     };
 }
 
