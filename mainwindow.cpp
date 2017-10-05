@@ -143,7 +143,7 @@ void MainWindow::loadGeometry()
     auto g = settings.value(QStringLiteral("geometry")).toByteArray();
     restoreGeometry(g);
 
-    auto list = settings.value(QStringLiteral("expandedList")).toList();
+    const auto list = settings.value(QStringLiteral("expandedList")).toList();
     QString root = dirModel->rootPath();
     for(const auto &elem : list) {
         QString path = elem.toString();
