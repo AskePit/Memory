@@ -58,6 +58,8 @@ private slots:
     void on_actionSave_triggered();
 
 private:
+    void makeConnections();
+
     enum CurrentContent {
         Text,
         Picture,
@@ -96,6 +98,9 @@ private:
     QMenu *trayIconMenu;
 
     void createTrayIcon();
+
+    bool picPressed {false};
+    QPoint picPressPoint;
 };
 
 } // namespace memory

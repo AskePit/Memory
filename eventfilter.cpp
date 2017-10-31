@@ -2,6 +2,7 @@
 #include <QTableWidget>
 #include <QTreeView>
 #include <QEvent>
+#include <QLabel>
 #include <QWheelEvent>
 
 namespace memory {
@@ -10,6 +11,7 @@ bool EventFilter::eventFilter(QObject *watched, QEvent *event)
 {
     QTableWidget *list = qobject_cast<QTableWidget *>(watched);
     QTreeView *tree = qobject_cast<QTreeView *>(watched);
+    QLabel *picView = qobject_cast<QLabel *>(watched);
 
     if (list) {
         switch(event->type()) {
@@ -39,6 +41,20 @@ bool EventFilter::eventFilter(QObject *watched, QEvent *event)
                 }
             } break;
             default: break;
+        }
+    }
+
+    if(picView) {
+        QMouseEvent *e { dynamic_cast<QMouseEvent *>(event) };
+        if(e) {
+            QPoint pos = e->pos();
+
+            switch(event->type()) {
+                case QEvent::MouseButtonPress:   emit picPress(pos); break;
+                case QEvent::MouseMove:          emit picMove(pos); break;
+                case QEvent::MouseButtonRelease: emit picRelease(pos); break;
+                default: break;
+            }
         }
     }
 

@@ -15,6 +15,7 @@
 #include <QBitmap>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QScrollBar>
 
 namespace memory {
 
@@ -38,7 +39,6 @@ MainWindow::MainWindow(QWidget *parent) :
     contentSplitterSizes = {100, 260};
     ui->contentSplitter->setSizes(contentSplitterSizes);
 
-
     ui->imgArea->hide();
 
     ui->tree->setModel(dirModel);
@@ -49,8 +49,22 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     ui->tree->setRootIndex(dirModel->rootIndex());
 
+    makeConnections();
+
+    QString treePos = settings.value(QStringLiteral("treePosition"), QString()).toString();
+    if(!treePos.isEmpty()) {
+        ui->tree->setCurrentIndex(dirModel->index(treePos));
+        connect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
+    }
+
+    createTrayIcon();
+}
+
+void MainWindow::makeConnections()
+{
     ui->filesList->installEventFilter(listEventFilter);
     ui->tree->installEventFilter(listEventFilter);
+    ui->imgView->installEventFilter(listEventFilter);
 
     connect(ui->tree->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onDirChanged);
     connect(ui->filesList->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
@@ -64,26 +78,41 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listEventFilter, &EventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
     connect(listEventFilter, &EventFilter::renameFile, this, &MainWindow::on_actionRename_File_triggered);
 
+    connect(listEventFilter, &EventFilter::picPress, [this](const QPoint &p) {
+        picPressed = true;
+        picPressPoint = p;
+    });
+
+    connect(listEventFilter, &EventFilter::picRelease, [this](const QPoint &p) {
+        Q_UNUSED(p);
+        picPressed = false;
+        picPressPoint = p;
+    });
+
+    connect(listEventFilter, &EventFilter::picMove, [this](const QPoint &p) {
+        if(!picPressed) {
+            return;
+        }
+
+        auto hBar { ui->imgArea->horizontalScrollBar() };
+        auto vBar { ui->imgArea->verticalScrollBar() };
+        bool barsVisible { hBar->isVisible() || vBar->isVisible() };
+
+        if(!barsVisible) {
+            return;
+        }
+
+        QPoint diff { picPressPoint - p };
+        hBar->setValue(hBar->value() + diff.x());
+        vBar->setValue(vBar->value() + diff.y());
+    });
+
     connect(ui->textEditor, &QPlainTextEdit::modificationChanged, [=](bool b) {
         Q_UNUSED(b);
         fileEdited = true;
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::onQuit);
-
-    QString treePos = settings.value(QStringLiteral("treePosition"), QString()).toString();
-    if(!treePos.isEmpty()) {
-        ui->tree->setCurrentIndex(dirModel->index(treePos));
-        connect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
-    }
-
-    createTrayIcon();
-}
-
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-    onQuit();
-    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::recoverFileAfterListUpdate()
@@ -97,6 +126,12 @@ void MainWindow::recoverFileAfterListUpdate()
 
     // should be performed once at startup
     disconnect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    onQuit();
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::saveGeometry()

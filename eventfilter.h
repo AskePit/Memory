@@ -16,6 +16,10 @@ signals:
     void deleteFile();
     void deleteDir();
     void renameFile();
+
+    void picPress(const QPoint &p);
+    void picMove(const QPoint &p);
+    void picRelease(const QPoint &p);
 };
 
 } // namespace memory
