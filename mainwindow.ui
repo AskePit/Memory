@@ -115,7 +115,7 @@ QTreeView::item:selected {
         <bool>false</bool>
        </attribute>
       </widget>
-      <widget class="QSplitter" name="listSplitter">
+      <widget class="QSplitter" name="contentSplitter">
        <property name="frameShape">
         <enum>QFrame::Box</enum>
        </property>
@@ -128,7 +128,10 @@ QTreeView::item:selected {
        <property name="handleWidth">
         <number>1</number>
        </property>
-       <widget class="QTableWidget" name="list">
+       <property name="childrenCollapsible">
+        <bool>true</bool>
+       </property>
+       <widget class="QTableWidget" name="filesList">
         <property name="contextMenuPolicy">
          <enum>Qt::CustomContextMenu</enum>
         </property>
@@ -210,7 +213,7 @@ QTableWidget::item:selected {
          <number>18</number>
         </attribute>
        </widget>
-       <widget class="memory::TextEditor" name="field">
+       <widget class="memory::TextEditor" name="textEditor">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -239,6 +242,30 @@ QTableWidget::item:selected {
         <property name="placeholderText">
          <string>No Text</string>
         </property>
+       </widget>
+       <widget class="QScrollArea" name="imgArea">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QLabel" name="imgView">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>320</width>
+           <height>69</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </widget>
       </widget>
      </widget>

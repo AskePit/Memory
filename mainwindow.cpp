@@ -11,6 +11,8 @@
 #include <QSystemTrayIcon>
 #include <QTextStream>
 #include <QMimeData>
+#include <QImageReader>
+#include <QBitmap>
 #include <QPrinter>
 #include <QPrintDialog>
 
@@ -21,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     dirModel(new DirModel(this)),
     listEventFilter(new EventFilter),
+    currentContent(CurrentContent::Text),
     highlighter(nullptr),
     settings(QStringLiteral("PitM"), QStringLiteral("Memory")),
     currFileName(QString::null),
@@ -32,7 +35,11 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(QIcon(QStringLiteral(":/window_icon.png")));
 
     ui->treeSplitter->setSizes({100, 260});
-    ui->listSplitter->setSizes({100, 260});
+    contentSplitterSizes = {100, 260};
+    ui->contentSplitter->setSizes(contentSplitterSizes);
+
+
+    ui->imgArea->hide();
 
     ui->tree->setModel(dirModel);
 
@@ -42,14 +49,14 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     ui->tree->setRootIndex(dirModel->rootIndex());
 
-    ui->list->installEventFilter(listEventFilter);
+    ui->filesList->installEventFilter(listEventFilter);
     ui->tree->installEventFilter(listEventFilter);
 
     connect(ui->tree->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onDirChanged);
-    connect(ui->list->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
+    connect(ui->filesList->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
     connect(dirModel, &DirModel::fileMoved, [this](){ onDirChanged(ui->tree->currentIndex(), QModelIndex()); });
 
-    connect(ui->list, &QTableWidget::customContextMenuRequested, this, &MainWindow::showListContextMenu);
+    connect(ui->filesList, &QTableWidget::customContextMenuRequested, this, &MainWindow::showListContextMenu);
     connect(ui->tree, &QTreeView::customContextMenuRequested, this, &MainWindow::showTreeContextMenu);
 
     connect(listEventFilter, &EventFilter::listResized, this, &MainWindow::updateList);
@@ -57,14 +64,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listEventFilter, &EventFilter::deleteDir, this, &MainWindow::on_actionDelete_Folder_triggered);
     connect(listEventFilter, &EventFilter::renameFile, this, &MainWindow::on_actionRename_File_triggered);
 
-    connect(ui->field, &QPlainTextEdit::modificationChanged, [=](bool b) {
+    connect(ui->textEditor, &QPlainTextEdit::modificationChanged, [=](bool b) {
         Q_UNUSED(b);
         fileEdited = true;
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::onQuit);
-
-    loadGeometry();
 
     QString treePos = settings.value(QStringLiteral("treePosition"), QString()).toString();
     if(!treePos.isEmpty()) {
@@ -85,9 +90,10 @@ void MainWindow::recoverFileAfterListUpdate()
 {
     QString tablePos = settings.value(QStringLiteral("tablePosition"), QString()).toString();
     if(!tablePos.isEmpty()) {
-        QPoint pos = getFilePos(ui->list, tablePos);
-        ui->list->setCurrentCell(pos.y(), pos.x());
+        QPoint pos = getFilePos(ui->filesList, tablePos);
+        ui->filesList->setCurrentCell(pos.y(), pos.x());
     }
+    loadGeometry();
 
     // should be performed once at startup
     disconnect(this, &MainWindow::listUpdated, this, &MainWindow::recoverFileAfterListUpdate);
@@ -102,9 +108,9 @@ void MainWindow::saveGeometry()
     settings.setValue(QStringLiteral("treeSplit0"), treeSizes[0]);
     settings.setValue(QStringLiteral("treeSplit1"), treeSizes[1]);
 
-    auto listSizes = ui->listSplitter->sizes();
-    settings.setValue(QStringLiteral("listSplit0"), listSizes[0]);
-    settings.setValue(QStringLiteral("listSplit1"), listSizes[1]);
+    rememberContentSplitter();
+    settings.setValue(QStringLiteral("listSplit0"), contentSplitterSizes[0]);
+    settings.setValue(QStringLiteral("listSplit1"), contentSplitterSizes[1]);
 
     QStringList expandedList;
     dirModel->foreach_index([&](const QModelIndex &index) {
@@ -137,7 +143,8 @@ void MainWindow::loadGeometry()
     }
 
     if(listSplit0 != -1 && listSplit1 != -1) {
-        ui->listSplitter->setSizes({listSplit0, listSplit1});
+        contentSplitterSizes = {listSplit0, listSplit1};
+        adjustContentSplitter();
     }
 
     auto g = settings.value(QStringLiteral("geometry")).toByteArray();
@@ -155,12 +162,33 @@ void MainWindow::loadGeometry()
     settings.endGroup();
 }
 
+void MainWindow::rememberContentSplitter()
+{
+    // widgets order: filesList -> textEditor -> imageArea
+    auto sizes = ui->contentSplitter->sizes();
+    if(currentContent.test(CurrentContent::Text)) {
+        contentSplitterSizes = {sizes[0], sizes[1]};
+    } else {
+        contentSplitterSizes = {sizes[0], sizes[2]};
+    }
+}
+
+void MainWindow::adjustContentSplitter()
+{
+    // widgets order: filesList -> textEditor -> imageArea
+    if(currentContent.test(CurrentContent::Text)) {
+        ui->contentSplitter->setSizes({contentSplitterSizes[0], contentSplitterSizes[1], 0});
+    } else {
+        ui->contentSplitter->setSizes({contentSplitterSizes[0], 0, contentSplitterSizes[1]});
+    }
+}
+
 void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous);
     ui->actionDelete_Folder->setEnabled(false);
 
-    clearFilesList(ui->list);
+    clearFilesList(ui->filesList);
     files.clear();
 
     if(!current.isValid()) {
@@ -199,7 +227,7 @@ void MainWindow::saveCurrentFile()
         file.open(QIODevice::WriteOnly | QIODevice::Truncate);
         QTextStream ss(&file);
         ss.setCodec("UTF-8");
-        ss << ui->field->toPlainText();
+        ss << ui->textEditor->toPlainText();
         file.close();
     }
 }
@@ -210,6 +238,12 @@ void MainWindow::onQuit()
     saveGeometry();
 }
 
+static bool isPicture(const QString &fileName)
+{
+    QImageReader reader(fileName);
+    return reader.format() != QByteArray();
+}
+
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     ui->actionDelete_File->setEnabled(false);
@@ -218,7 +252,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     saveCurrentFile();
 
     if(previous.isValid()) {
-        auto prevItem = ui->list->item(previous.row(), previous.column());
+        auto prevItem = ui->filesList->item(previous.row(), previous.column());
 
         if(prevItem != nullptr) {
             boldenFileItem(prevItem, false);
@@ -229,7 +263,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         return;
     }
 
-    auto currItem = ui->list->item(current.row(), current.column());
+    auto currItem = ui->filesList->item(current.row(), current.column());
 
     if(currItem == nullptr) {
         return;
@@ -240,28 +274,54 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     ui->actionDelete_File->setEnabled(true);
     ui->actionRename_File->setEnabled(true);
 
-    ui->field->clear();
+    ui->textEditor->clear();
     fileEdited = false;
 
-    int idx = ui->list->rowCount()*current.column() + current.row();
+    int idx = ui->filesList->rowCount()*current.column() + current.row();
 
     QFileInfo i(files[idx]);
     currFileName = i.filePath();
-    QFile file(currFileName);
-    file.open(QIODevice::ReadOnly);
 
-    if(isBinary(file)) {
-        ui->field->setPlainText(tr("BINARY FILE"));
-        ui->field->setDisabled(true);
+    rememberContentSplitter();
+
+    // picture
+    if(isPicture(currFileName)) {
+        currentContent.reset();
+        currentContent.set(CurrentContent::Picture);
+        currentContent.set(CurrentContent::Binary);
+
+        ui->textEditor->hide();
+        ui->imgArea->show();
+
+        QPixmap pixmap(currFileName);
+        ui->imgView->setPixmap(pixmap);
+    // text
     } else {
-        ui->field->setPlainText(QString::fromUtf8(file.readAll()));
-        ui->field->setEnabled(true);
+        currentContent.reset();
+        currentContent.set(CurrentContent::Text);
+
+        ui->imgArea->hide();
+        ui->textEditor->show();
+
+        QFile file(currFileName);
+        file.open(QIODevice::ReadOnly);
+
+        if(isBinary(file)) {
+            currentContent.set(CurrentContent::Binary);
+
+            ui->textEditor->setPlainText(tr("BINARY FILE"));
+            ui->textEditor->setDisabled(true);
+        } else {
+            ui->textEditor->setPlainText(QString::fromUtf8(file.readAll()));
+            ui->textEditor->setEnabled(true);
+        }
+
+        file.close();
+        fileEdited = false;
+        applyHighlighter();
     }
 
-    file.close();
-    fileEdited = false;
-    applyHighlighter();
-
+    adjustContentSplitter();
     settings.setValue(QStringLiteral("tablePosition"), QFileInfo(currFileName).fileName());
 }
 
@@ -307,7 +367,7 @@ void MainWindow::applyHighlighter()
         highlighter = nullptr;
     }
 
-    QTextDocument *doc = ui->field->document();
+    QTextDocument *doc = ui->textEditor->document();
 
     if(id == cppId) {
         highlighter = new CppHighlighter(doc);
@@ -333,15 +393,15 @@ void MainWindow::updateList()
 {
     QString remember;
     if(!dirChanged) {
-        disconnect(ui->list->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
-        if(ui->list->currentItem()) {
-            remember = ui->list->currentItem()->text();
+        disconnect(ui->filesList->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
+        if(ui->filesList->currentItem()) {
+            remember = ui->filesList->currentItem()->text();
         }
     }
 
-    ui->list->clearContents();
+    ui->filesList->clearContents();
 
-    int tableH = ui->list->height();
+    int tableH = ui->filesList->height();
     int rowH = 18;
     int rows = tableH/rowH-3;
     int columns = files.count() / rows;
@@ -349,8 +409,8 @@ void MainWindow::updateList()
 
     rows = std::min(rows, files.count());
 
-    ui->list->setRowCount(rows);
-    ui->list->setColumnCount(columns);
+    ui->filesList->setRowCount(rows);
+    ui->filesList->setColumnCount(columns);
 
     for(int i = 0; i<files.count(); ++i) {
         QString f = files[i];
@@ -362,24 +422,24 @@ void MainWindow::updateList()
 
         int row = i%rows;
         int column = i/rows;
-        ui->list->setItem(row, column, item);
+        ui->filesList->setItem(row, column, item);
 
-        QModelIndex index = ui->list->model()->index(row, column);
+        QModelIndex index = ui->filesList->model()->index(row, column);
         QPixmap icon(QStringLiteral(":/bullet.png"));
-        ui->list->model()->setData(index, icon, Qt::DecorationRole);
+        ui->filesList->model()->setData(index, icon, Qt::DecorationRole);
 
         if(f == remember) {
             boldenFileItem(item, true);
-            ui->list->setCurrentItem(item);
+            ui->filesList->setCurrentItem(item);
         }
     }
 
-    resizeFilesColumns(ui->list);
+    resizeFilesColumns(ui->filesList);
 
     if(dirChanged) {
         dirChanged = false;
     } else {
-        connect(ui->list->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
+        connect(ui->filesList->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
     }
 
     emit listUpdated();
@@ -392,13 +452,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::showListContextMenu(const QPoint& point)
 {
-    QPoint globalPos = ui->list->mapToGlobal(point);
-    QMenu menu(ui->list);
+    QPoint globalPos = ui->filesList->mapToGlobal(point);
+    QMenu menu(ui->filesList);
     menu.addAction(ui->actionRename_File);
     menu.addAction(ui->actionNew_File);
     menu.addAction(ui->actionDelete_File);
 
-    auto item = ui->list->itemAt(point);
+    auto item = ui->filesList->itemAt(point);
     ui->actionDelete_File->setEnabled(item);
     ui->actionRename_File->setEnabled(item);
 
@@ -423,13 +483,13 @@ void MainWindow::showTreeContextMenu(const QPoint& point)
 
 void MainWindow::on_actionDelete_File_triggered()
 {
-    if(!ui->list->currentIndex().isValid()) {
+    if(!ui->filesList->currentIndex().isValid()) {
         return;
     }
 
-    int idx = ui->list->rowCount()*ui->list->currentColumn() + ui->list->currentRow();
+    int idx = ui->filesList->rowCount()*ui->filesList->currentColumn() + ui->filesList->currentRow();
 
-    int ret = callQuestionDialog(tr("Delete file \"%1\"?").arg(ui->list->currentItem()->text()));
+    int ret = callQuestionDialog(tr("Delete file \"%1\"?").arg(ui->filesList->currentItem()->text()));
     if(ret != QMessageBox::Ok) {
         return;
     }
@@ -438,7 +498,7 @@ void MainWindow::on_actionDelete_File_triggered()
 
     QFile::remove(filename);
     files.removeAt(idx);
-    ui->field->clear();
+    ui->textEditor->clear();
 
     dirChanged = false;
     fileEdited = false;
@@ -482,8 +542,8 @@ void MainWindow::on_actionNew_File_triggered()
     files.sort(Qt::CaseInsensitive);
     updateList();
 
-    QPoint pos = getFilePos(ui->list, fileName);
-    ui->list->setCurrentCell(pos.y(), pos.x());
+    QPoint pos = getFilePos(ui->filesList, fileName);
+    ui->filesList->setCurrentCell(pos.y(), pos.x());
 }
 
 void MainWindow::on_actionNew_Child_Folder_triggered()
@@ -521,9 +581,9 @@ void MainWindow::on_actionOpen_Folder_triggered()
 void MainWindow::changeDir(const QString &path)
 {
     dirChanged = true;
-    clearFilesList(ui->list);
+    clearFilesList(ui->filesList);
     files.clear();
-    ui->field->clear();
+    ui->textEditor->clear();
     fileEdited = false; // prevent from clearing file due to previous line
     currFileName = QString::null;
 
@@ -563,7 +623,7 @@ void MainWindow::on_actionRename_File_triggered()
 
     currFileName = newName;
 
-    ui->list->currentItem()->setText(getNameForList(newName));
+    ui->filesList->currentItem()->setText(getNameForList(newName));
     applyHighlighter();
 }
 
@@ -619,7 +679,7 @@ void MainWindow::createTrayIcon()
 
 void MainWindow::on_actionPrint_triggered()
 {
-    QTextDocument *document = ui->field->document()->clone();
+    QTextDocument *document = ui->textEditor->document()->clone();
 
     QPrinter printer;
 

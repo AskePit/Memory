@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSettings>
+#include <bitset>
 
 namespace Ui {
 class MainWindow;
@@ -57,10 +58,19 @@ private slots:
     void on_actionSave_triggered();
 
 private:
+    enum CurrentContent {
+        Text,
+        Picture,
+        Binary,
+
+        Count
+    };
+
     Ui::MainWindow *ui;
     DirModel *dirModel;
     EventFilter *listEventFilter;
     QStringList files;
+    std::bitset<CurrentContent::Count> currentContent;
     QSyntaxHighlighter *highlighter;
     QSettings settings;
 
@@ -72,6 +82,9 @@ private:
     void changeDir(const QString &path);
     void saveCurrentFile();
 
+    QList<int> contentSplitterSizes;
+    void rememberContentSplitter();
+    void adjustContentSplitter();
     void saveGeometry();
     void loadGeometry();
 
