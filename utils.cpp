@@ -139,6 +139,10 @@ bool isPicture(const QString &fileName)
     return reader.format() != QByteArray();
 }
 
+static inline bool isNth(int val, int n) {
+    return val % n == n - 1;
+}
+
 QString binaryToText(const QByteArray &data, bool caps)
 {
     Q_UNUSED(caps);
@@ -146,13 +150,13 @@ QString binaryToText(const QByteArray &data, bool caps)
     QString res;
     for(int i = 0; i<raw.size(); ++i) {
         res += raw[i];
-        if(i % 2 == 1) {
+        if(isNth(i, 2)) {
             res += ' ';
         }
 
-        if(i % 32 == 31) {
+        if(isNth(i, 32)) {
             res += '\n';
-        } else if(i % 16 == 15) {
+        } else if(isNth(i, 16)) {
             res += "| ";
         }
     }
