@@ -11,7 +11,6 @@
 #include <QSystemTrayIcon>
 #include <QTextStream>
 #include <QMimeData>
-#include <QImageReader>
 #include <QBitmap>
 #include <QPrinter>
 #include <QPrintDialog>
@@ -257,7 +256,7 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
 
 void MainWindow::saveCurrentFile()
 {
-    if(!currFileName.isEmpty() && fileEdited) {
+    if(!currFileName.isEmpty() && fileEdited && !currentContent.test(CurrentContent::Binary)) {
         QFile file(currFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Truncate);
         QTextStream ss(&file);
@@ -271,12 +270,6 @@ void MainWindow::onQuit()
 {
     saveCurrentFile();
     saveGeometry();
-}
-
-static bool isPicture(const QString &fileName)
-{
-    QImageReader reader(fileName);
-    return reader.format() != QByteArray();
 }
 
 void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -335,6 +328,8 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         currentContent.reset();
         currentContent.set(CurrentContent::Text);
 
+        ui->textEditor->setEnabled(true);
+
         ui->imgArea->hide();
         ui->textEditor->show();
 
@@ -344,11 +339,12 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         if(isBinary(file)) {
             currentContent.set(CurrentContent::Binary);
 
-            ui->textEditor->setPlainText(tr("BINARY FILE"));
-            ui->textEditor->setDisabled(true);
+            //ui->textEditor->setPlainText(tr("BINARY FILE"));
+            ui->textEditor->setPlainText(binaryToText(file.readAll()));
+            ui->textEditor->setReadOnly(true);
         } else {
             ui->textEditor->setPlainText(QString::fromUtf8(file.readAll()));
-            ui->textEditor->setEnabled(true);
+            ui->textEditor->setReadOnly(false);
         }
 
         file.close();

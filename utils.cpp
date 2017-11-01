@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QTableWidget>
 #include <QCoreApplication>
+#include <QImageReader>
 
 bool isBinary(QFile &f)
 {
@@ -17,6 +18,7 @@ bool isBinary(QFile &f)
         f.getChar(&c);
 
         if(c == 0) {
+            f.seek(0);
             return true;
         }
 
@@ -129,4 +131,31 @@ void boldenFileItem(QTableWidgetItem *item, bool bold)
     QFont font = item->font();
     font.setBold(bold);
     item->setFont(font);
+}
+
+bool isPicture(const QString &fileName)
+{
+    QImageReader reader(fileName);
+    return reader.format() != QByteArray();
+}
+
+QString binaryToText(const QByteArray &data, bool caps)
+{
+    Q_UNUSED(caps);
+    QByteArray raw = data.toHex();
+    QString res;
+    for(int i = 0; i<raw.size(); ++i) {
+        res += raw[i];
+        if(i % 2 == 1) {
+            res += ' ';
+        }
+
+        if(i % 32 == 31) {
+            res += '\n';
+        } else if(i % 16 == 15) {
+            res += "| ";
+        }
+    }
+
+    return res;
 }

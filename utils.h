@@ -14,5 +14,7 @@ QPoint getFilePos(QTableWidget *w, const QString &str);
 void clearFilesList(QTableWidget *w);
 void resizeFilesColumns(QTableWidget *w);
 void boldenFileItem(QTableWidgetItem *item, bool bold);
+bool isPicture(const QString &fileName);
+QString binaryToText(const QByteArray &data, bool caps = true);
 
 #endif // UTILS_H
