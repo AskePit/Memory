@@ -35,8 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(QIcon(QStringLiteral(":/window_icon.png")));
 
     ui->treeSplitter->setSizes({100, 260});
-    contentSplitterSizes = {100, 260};
-    ui->contentSplitter->setSizes(contentSplitterSizes);
+    ui->contentSplitter->setSizes({100, 260});
 
     ui->imgArea->hide();
 
@@ -142,7 +141,7 @@ void MainWindow::saveGeometry()
     settings.setValue(QStringLiteral("treeSplit0"), treeSizes[0]);
     settings.setValue(QStringLiteral("treeSplit1"), treeSizes[1]);
 
-    rememberContentSplitter();
+    auto contentSplitterSizes = ui->contentSplitter->sizes();
     settings.setValue(QStringLiteral("listSplit0"), contentSplitterSizes[0]);
     settings.setValue(QStringLiteral("listSplit1"), contentSplitterSizes[1]);
 
@@ -169,16 +168,15 @@ void MainWindow::loadGeometry()
     settings.beginGroup(QStringLiteral("MainWindow"));
     int treeSplit0 = settings.value(QStringLiteral("treeSplit0"), 100).toInt();
     int treeSplit1 = settings.value(QStringLiteral("treeSplit1"), 260).toInt();
-    int listSplit0 = settings.value(QStringLiteral("listSplit0"), 100).toInt();
-    int listSplit1 = settings.value(QStringLiteral("listSplit1"), 260).toInt();
+    int contentSplit0 = settings.value(QStringLiteral("listSplit0"), 100).toInt();
+    int contentSplit1 = settings.value(QStringLiteral("listSplit1"), 260).toInt();
 
     if(treeSplit0 != -1 && treeSplit1 != -1) {
         ui->treeSplitter->setSizes({treeSplit0, treeSplit1});
     }
 
-    if(listSplit0 != -1 && listSplit1 != -1) {
-        contentSplitterSizes = {listSplit0, listSplit1};
-        adjustContentSplitter();
+    if(contentSplit0 != -1 && contentSplit1 != -1) {
+        ui->contentSplitter->setSizes({contentSplit0, contentSplit1});
     }
 
     auto g = settings.value(QStringLiteral("geometry")).toByteArray();
@@ -194,27 +192,6 @@ void MainWindow::loadGeometry()
     }
 
     settings.endGroup();
-}
-
-void MainWindow::rememberContentSplitter()
-{
-    // widgets order: filesList -> textEditor -> imageArea
-    auto sizes = ui->contentSplitter->sizes();
-    if(currentContent.test(CurrentContent::Text)) {
-        contentSplitterSizes = {sizes[0], sizes[1]};
-    } else {
-        contentSplitterSizes = {sizes[0], sizes[2]};
-    }
-}
-
-void MainWindow::adjustContentSplitter()
-{
-    // widgets order: filesList -> textEditor -> imageArea
-    if(currentContent.test(CurrentContent::Text)) {
-        ui->contentSplitter->setSizes({contentSplitterSizes[0], contentSplitterSizes[1], 0});
-    } else {
-        ui->contentSplitter->setSizes({contentSplitterSizes[0], 0, contentSplitterSizes[1]});
-    }
 }
 
 void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -310,8 +287,6 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     QFileInfo i(files[idx]);
     currFileName = i.filePath();
 
-    rememberContentSplitter();
-
     // picture
     if(isPicture(currFileName)) {
         currentContent.reset();
@@ -352,7 +327,6 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         applyHighlighter();
     }
 
-    adjustContentSplitter();
     settings.setValue(QStringLiteral("tablePosition"), QFileInfo(currFileName).fileName());
 }
 

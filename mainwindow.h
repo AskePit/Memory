@@ -84,9 +84,6 @@ private:
     void changeDir(const QString &path);
     void saveCurrentFile();
 
-    QList<int> contentSplitterSizes;
-    void rememberContentSplitter();
-    void adjustContentSplitter();
     void saveGeometry();
     void loadGeometry();
 
