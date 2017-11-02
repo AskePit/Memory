@@ -18,11 +18,12 @@ public:
     };
 
     explicit TextEditor(QWidget *parent = 0);
-    bool openFile(const QString &m_fileName); // true if text, false if binary
+    void openFile(const QString &m_fileName); // true if text, false if binary
     void saveFile(const QString &m_fileName);
     void saveFile();
     void applyHighlighter();
     void deleteHighlighter();
+    bool isBinary() { return m_binary; }
 
 public slots:
     void onFileRenamed(const QString &fileName);
@@ -38,8 +39,6 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
-
-
 
 private:
     class LineNumberArea : public QWidget
@@ -66,6 +65,7 @@ private:
 
     LineNumberArea m_lineNumberArea;
     QString m_fileName;
+    bool m_binary {false};
     QSyntaxHighlighter *m_highlighter {nullptr};
 };
 

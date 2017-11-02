@@ -302,8 +302,8 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         ui->imgArea->hide();
         ui->textEditor->show();
 
-        bool text = ui->textEditor->openFile(currFileName);
-        if(!text) {
+        ui->textEditor->openFile(currFileName);
+        if(ui->textEditor->isBinary()) {
             content |= Content::Binary;
         }
 

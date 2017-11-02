@@ -28,15 +28,15 @@ TextEditor::TextEditor(QWidget *parent)
     highlightCurrentLine();
 }
 
-bool TextEditor::openFile(const QString &fileName)
+void TextEditor::openFile(const QString &fileName)
 {
     m_fileName = fileName;
 
     QFile file(m_fileName);
     file.open(QIODevice::ReadOnly);
 
-    bool binary = isBinary(file);
-    if(binary) {
+    m_binary = ::isBinary(file);
+    if(m_binary) {
         //ui->textEditor->setPlainText(tr("BINARY FILE"));
         setPlainText(binaryToText(file.readAll()));
         deleteHighlighter();
@@ -45,10 +45,8 @@ bool TextEditor::openFile(const QString &fileName)
         applyHighlighter();
     }
 
-    setReadOnly(binary);
+    setReadOnly(m_binary);
     file.close();
-
-    return !binary;
 }
 
 void TextEditor::saveFile(const QString &fileName)
@@ -129,7 +127,9 @@ void TextEditor::deleteHighlighter()
 void TextEditor::onFileRenamed(const QString &fileName)
 {
     m_fileName = fileName;
-    applyHighlighter();
+    if(!m_binary) {
+        applyHighlighter();
+    }
 }
 
 int TextEditor::lineNumberAreaWidth()
