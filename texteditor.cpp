@@ -1,18 +1,20 @@
 #include "texteditor.h"
+#include "highlighters/highlighters.h"
+#include "utils.h"
 
 #include <QPainter>
 #include <QTextBlock>
+#include <QTextStream>
 
 namespace memory {
 
 TextEditor::TextEditor(QWidget *parent)
     : QPlainTextEdit(parent)
+    , m_lineNumberArea(this)
 {
-    lineNumberArea = new LineNumberArea(this);
-
-    connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
-    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+    connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
+    connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
+    connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
 
     QFont font = QFont(QStringLiteral("Consolas"), 10);
     setFont(font);
@@ -24,6 +26,110 @@ TextEditor::TextEditor(QWidget *parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+}
+
+bool TextEditor::openFile(const QString &fileName)
+{
+    m_fileName = fileName;
+
+    QFile file(m_fileName);
+    file.open(QIODevice::ReadOnly);
+
+    bool binary = isBinary(file);
+    if(binary) {
+        //ui->textEditor->setPlainText(tr("BINARY FILE"));
+        setPlainText(binaryToText(file.readAll()));
+        deleteHighlighter();
+    } else {
+        setPlainText(QString::fromUtf8(file.readAll()));
+        applyHighlighter();
+    }
+
+    setReadOnly(binary);
+    file.close();
+
+    return !binary;
+}
+
+void TextEditor::saveFile(const QString &fileName)
+{
+    QFile file(fileName);
+    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    QTextStream ss(&file);
+    ss.setCodec("UTF-8");
+    ss << toPlainText();
+    file.close();
+}
+
+void TextEditor::saveFile()
+{
+    if(!m_fileName.isEmpty()) {
+        saveFile(m_fileName);
+    }
+}
+
+void TextEditor::applyHighlighter()
+{
+    QString prefix("memory::");
+    QString suffix("Highlighter");
+    QString id;
+    if(m_highlighter) {
+        id = m_highlighter->metaObject()->className(); // memory::CppHighlighter
+        id = id.mid(prefix.size());                  // CppHighlighter
+        id.truncate(id.count() - suffix.count());    // Cpp
+    }
+
+    const QString cppId("Cpp");
+    const QString jsId("JS");
+    const QString tabId("Tab");
+
+    bool doSwitch = false;
+
+    auto c = Qt::CaseInsensitive;
+
+    if(m_fileName.endsWith(QLatin1String(".cpp"), c) || m_fileName.endsWith(QLatin1String(".h"), c) || m_fileName.endsWith(QLatin1String(".c"), c)) {
+        doSwitch = (id != cppId);
+        id = cppId;
+    } else if(m_fileName.endsWith(QLatin1String(".js"), c)) {
+        doSwitch = (id != jsId);
+        id = jsId;
+    } else if(m_fileName.endsWith(QLatin1String(".tab"), c)) {
+        doSwitch = (id != tabId);
+        id = tabId;
+    } else {
+        doSwitch = !id.isEmpty();
+        id.clear();
+    }
+
+    if(!doSwitch) {
+        return;
+    }
+
+    deleteHighlighter();
+
+    QTextDocument *doc = document();
+
+    if(id == cppId) {
+        m_highlighter = new CppHighlighter(doc);
+    } else if(id == jsId) {
+        m_highlighter = new JSHighlighter(doc);
+    } else if(id == tabId) {
+        m_highlighter = new TabHighlighter(doc);
+    }
+}
+
+void TextEditor::deleteHighlighter()
+{
+    if(m_highlighter) {
+        delete m_highlighter;
+        m_highlighter = nullptr;
+    }
+}
+
+void TextEditor::onFileRenamed(const QString &fileName)
+{
+    m_fileName = fileName;
+    applyHighlighter();
 }
 
 int TextEditor::lineNumberAreaWidth()
@@ -48,9 +154,9 @@ void TextEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 void TextEditor::updateLineNumberArea(const QRect &rect, int dy)
 {
     if (dy)
-        lineNumberArea->scroll(0, dy);
+        m_lineNumberArea.scroll(0, dy);
     else
-        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+        m_lineNumberArea.update(0, rect.y(), m_lineNumberArea.width(), rect.height());
 
     if (rect.contains(viewport()->rect()))
         updateLineNumberAreaWidth(0);
@@ -61,7 +167,7 @@ void TextEditor::resizeEvent(QResizeEvent *e)
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
-    lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    m_lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
 void TextEditor::highlightCurrentLine()
@@ -85,7 +191,7 @@ void TextEditor::highlightCurrentLine()
 
 void TextEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
-    QPainter painter(lineNumberArea);
+    QPainter painter(&m_lineNumberArea);
     painter.fillRect(event->rect(), Qt::white);
 
     QTextBlock block = firstVisibleBlock();
@@ -98,7 +204,7 @@ void TextEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             QString number = QString::number(blockNumber + 1);
 
             painter.setPen(Qt::lightGray);
-            painter.drawText(0, top, lineNumberArea->width()-10, fontMetrics().height(),
+            painter.drawText(0, top, m_lineNumberArea.width()-10, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
 

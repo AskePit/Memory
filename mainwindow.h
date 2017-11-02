@@ -9,7 +9,6 @@ namespace Ui {
 class MainWindow;
 }
 
-class QSyntaxHighlighter;
 class QAction;
 class QSystemTrayIcon;
 class QMenu;
@@ -32,6 +31,7 @@ protected:
 
 signals:
     void listUpdated();
+    void fileRenamed(const QString &fileName);
 
 private slots:
     void onDirChanged(const QModelIndex &current, const QModelIndex &previous);
@@ -60,7 +60,7 @@ private slots:
 private:
     void makeConnections();
 
-    enum CurrentContent {
+    enum Content {
         Text,
         Picture,
         Binary,
@@ -72,15 +72,13 @@ private:
     DirModel *dirModel;
     EventFilter *listEventFilter;
     QStringList files;
-    std::bitset<CurrentContent::Count> currentContent;
-    QSyntaxHighlighter *highlighter;
+    std::bitset<Content::Count> content;
     QSettings settings;
 
     QString currFileName;
     bool dirChanged;
     bool fileEdited;
 
-    void applyHighlighter();
     void changeDir(const QString &path);
     void saveCurrentFile();
 

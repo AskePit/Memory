@@ -3,13 +3,11 @@
 
 #include "dirmodel.h"
 #include "eventfilter.h"
-#include "highlighters/highlighters.h"
 #include "utils.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QSystemTrayIcon>
-#include <QTextStream>
 #include <QMimeData>
 #include <QBitmap>
 #include <QPrinter>
@@ -23,8 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     dirModel(new DirModel(this)),
     listEventFilter(new EventFilter),
-    currentContent(CurrentContent::Text),
-    highlighter(nullptr),
+    content(Content::Text),
     settings(QStringLiteral("PitM"), QStringLiteral("Memory")),
     currFileName(QString::null),
     dirChanged(true),
@@ -104,6 +101,8 @@ void MainWindow::makeConnections()
         hBar->setValue(hBar->value() + diff.x());
         vBar->setValue(vBar->value() + diff.y());
     });
+
+    connect(this, &MainWindow::fileRenamed, ui->textEditor, &TextEditor::onFileRenamed);
 
     connect(ui->textEditor, &QPlainTextEdit::modificationChanged, [=](bool b) {
         Q_UNUSED(b);
@@ -233,13 +232,8 @@ void MainWindow::onDirChanged(const QModelIndex &current, const QModelIndex &pre
 
 void MainWindow::saveCurrentFile()
 {
-    if(!currFileName.isEmpty() && fileEdited && !currentContent.test(CurrentContent::Binary)) {
-        QFile file(currFileName);
-        file.open(QIODevice::WriteOnly | QIODevice::Truncate);
-        QTextStream ss(&file);
-        ss.setCodec("UTF-8");
-        ss << ui->textEditor->toPlainText();
-        file.close();
+    if(!currFileName.isEmpty() && fileEdited && !content.test(Content::Binary)) {
+        ui->textEditor->saveFile();
     }
 }
 
@@ -289,9 +283,9 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
 
     // picture
     if(isPicture(currFileName)) {
-        currentContent.reset();
-        currentContent.set(CurrentContent::Picture);
-        currentContent.set(CurrentContent::Binary);
+        content.reset();
+        content |= Content::Picture;
+        content |= Content::Binary;
 
         ui->textEditor->hide();
         ui->imgArea->show();
@@ -300,87 +294,23 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         ui->imgView->setPixmap(pixmap);
     // text
     } else {
-        currentContent.reset();
-        currentContent.set(CurrentContent::Text);
+        content.reset();
+        content |= Content::Text;
 
         ui->textEditor->setEnabled(true);
 
         ui->imgArea->hide();
         ui->textEditor->show();
 
-        QFile file(currFileName);
-        file.open(QIODevice::ReadOnly);
-
-        if(isBinary(file)) {
-            currentContent.set(CurrentContent::Binary);
-
-            //ui->textEditor->setPlainText(tr("BINARY FILE"));
-            ui->textEditor->setPlainText(binaryToText(file.readAll()));
-            ui->textEditor->setReadOnly(true);
-        } else {
-            ui->textEditor->setPlainText(QString::fromUtf8(file.readAll()));
-            ui->textEditor->setReadOnly(false);
+        bool text = ui->textEditor->openFile(currFileName);
+        if(!text) {
+            content |= Content::Binary;
         }
 
-        file.close();
         fileEdited = false;
-        applyHighlighter();
     }
 
     settings.setValue(QStringLiteral("tablePosition"), QFileInfo(currFileName).fileName());
-}
-
-void MainWindow::applyHighlighter()
-{
-    QString prefix("memory::");
-    QString suffix("Highlighter");
-    QString id;
-    if(highlighter) {
-        id = highlighter->metaObject()->className(); // memory::CppHighlighter
-        id = id.mid(prefix.size());                  // CppHighlighter
-        id.truncate(id.count() - suffix.count());    // Cpp
-    }
-
-    const QString cppId("Cpp");
-    const QString jsId("JS");
-    const QString tabId("Tab");
-
-    bool doSwitch = false;
-
-    auto c = Qt::CaseInsensitive;
-
-    if(currFileName.endsWith(QLatin1String(".cpp"), c) || currFileName.endsWith(QLatin1String(".h"), c) || currFileName.endsWith(QLatin1String(".c"), c)) {
-        doSwitch = (id != cppId);
-        id = cppId;
-    } else if(currFileName.endsWith(QLatin1String(".js"), c)) {
-        doSwitch = (id != jsId);
-        id = jsId;
-    } else if(currFileName.endsWith(QLatin1String(".tab"), c)) {
-        doSwitch = (id != tabId);
-        id = tabId;
-    } else {
-        doSwitch = !id.isEmpty();
-        id.clear();
-    }
-
-    if(!doSwitch) {
-        return;
-    }
-
-    if(highlighter) {
-        delete highlighter;
-        highlighter = nullptr;
-    }
-
-    QTextDocument *doc = ui->textEditor->document();
-
-    if(id == cppId) {
-        highlighter = new CppHighlighter(doc);
-    } else if(id == jsId) {
-        highlighter = new JSHighlighter(doc);
-    } else if(id == tabId) {
-        highlighter = new TabHighlighter(doc);
-    }
 }
 
 QString getNameForList(const QString &name)
@@ -615,7 +545,7 @@ void MainWindow::on_actionRename_File_triggered()
     }
 
     QFile f(currFileName);
-    newName = QFileInfo(currFileName).path() + QDir::separator() + newName;
+    newName = QFileInfo(currFileName).path() + '/' + newName;
 
     f.rename(newName);
 
@@ -629,7 +559,7 @@ void MainWindow::on_actionRename_File_triggered()
     currFileName = newName;
 
     ui->filesList->currentItem()->setText(getNameForList(newName));
-    applyHighlighter();
+    emit fileRenamed(newName);
 }
 
 void MainWindow::on_actionRename_Folder_triggered()
