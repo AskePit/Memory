@@ -303,7 +303,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         ui->textEditor->show();
 
         ui->textEditor->openFile(currFileName);
-        if(ui->textEditor->isBinary()) {
+        if(ui->textEditor->content() == TextEditor::Type::Hex) {
             content |= Content::Binary;
         }
 

@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QTextBlock>
 #include <QTextStream>
+#include <functional>
 
 namespace memory {
 
@@ -28,6 +29,55 @@ TextEditor::TextEditor(QWidget *parent)
     highlightCurrentLine();
 }
 
+TextEditor::TextEditor(Type::mask type, QWidget *parent)
+    : QPlainTextEdit(parent)
+    , m_lineNumberArea(this)
+    , m_type(type)
+{
+    updateLook();
+}
+
+void TextEditor::setType(Type::mask type)
+{
+    m_type = type;
+    updateLook();
+}
+
+void TextEditor::updateLook()
+{
+
+}
+
+void TextEditor::switchToType(Type::t_ type)
+{
+    if(type == Type::Code) {
+        m_lineNumberArea.show();
+        connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
+        connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
+        connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
+
+        QFont font = QFont(QStringLiteral("Consolas"), 10);
+        setFont(font);
+
+        const int tabStop = 4;
+
+        QFontMetrics metrics(font);
+        setTabStopWidth(tabStop * metrics.width(' '));
+
+        updateLineNumberAreaWidth(0);
+        highlightCurrentLine();
+    } else {
+        m_lineNumberArea.hide();
+        setViewportMargins(0, 0, 0, 0);
+
+        disconnect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
+        disconnect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
+        disconnect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
+    }
+
+
+}
+
 void TextEditor::openFile(const QString &fileName)
 {
     m_fileName = fileName;
@@ -35,8 +85,8 @@ void TextEditor::openFile(const QString &fileName)
     QFile file(m_fileName);
     file.open(QIODevice::ReadOnly);
 
-    m_binary = ::isBinary(file);
-    if(m_binary) {
+    bool binary = ::isBinary(file);
+    if(binary) {
         //ui->textEditor->setPlainText(tr("BINARY FILE"));
         setPlainText(binaryToText(file.readAll()));
         deleteHighlighter();
@@ -45,7 +95,14 @@ void TextEditor::openFile(const QString &fileName)
         applyHighlighter();
     }
 
-    setReadOnly(m_binary);
+    setReadOnly(binary);
+
+    m_content = binary ?
+                Type::Hex :
+                m_type & Type::Code ?
+                    Type::Code :
+                    Type::Text;
+
     file.close();
 }
 
@@ -127,7 +184,7 @@ void TextEditor::deleteHighlighter()
 void TextEditor::onFileRenamed(const QString &fileName)
 {
     m_fileName = fileName;
-    if(!m_binary) {
+    if(m_content != Type::Hex) {
         applyHighlighter();
     }
 }
