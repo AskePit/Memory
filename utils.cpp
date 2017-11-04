@@ -83,7 +83,7 @@ QPoint getFilePos(QTableWidget *w, const QString &_str)
     QStringRef str(&_str);
 
     if(str.endsWith(QLatin1String(".txt"))) {
-        str.truncate(str.length()-4);
+        str.truncate(str.length()-4u);
     }
 
     QPoint point;
