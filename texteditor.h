@@ -2,8 +2,95 @@
 #define MEMORYTEXTEDITOR_H
 
 #include <QPlainTextEdit>
+#include <bitset>
 
 class QSyntaxHighlighter;
+
+template <typename T>
+class opt {
+public:
+    opt()
+        : m_initialized(false)
+        , m_val(T())
+    {}
+    opt(T val)
+        : m_initialized(true)
+        , m_val(val)
+    {}
+    opt(const opt &other)
+        : m_initialized(other.m_initialized)
+        , m_val(other.m_val)
+    {}
+    opt(opt &&other)
+        : m_initialized(other.m_initialized)
+        , m_val(std::move(other.m_val))
+    {}
+    opt &operator=(T val) {
+        m_val = val;
+        m_initialized = true;
+        return *this;
+    }
+
+    operator bool() const { return m_initialized; }
+    T &get() { return m_val; }
+    const T &get() const { return m_val; }
+    T get_or(T def) const { return m_initialized? m_val : def; }
+
+private:
+    bool m_initialized {false};
+    T m_val;
+};
+
+template <typename base_type = unsigned long>
+class mask {
+public:
+    mask(base_type val)
+        : m(val)
+    {}
+    mask(const mask &other)
+        : m(other.m)
+    {}
+    mask &operator=(base_type val) {
+        m = val; return *this;
+    }
+
+    bool operator&(base_type t) const { return m & t; }
+    bool test(base_type t) const { return *this & t; }
+    bool hasNo(base_type t) const { return !(*this & t); }
+
+    mask &operator|=(base_type t) {
+        m |= t;
+        return *this;
+    }
+
+    mask &set(base_type t) { return *this |= t; }
+
+    mask &clear() {
+        m = 0;
+        return *this;
+    }
+
+    mask &clear(base_type t) {
+        m & (~t);
+        return this;
+    }
+
+    size_t count() const {
+        std::bitset<sizeof(base_type)*CHAR_BIT> bits(m);
+        return bits.count();
+    }
+
+    opt<base_type> unique() {
+        opt<base_type> u;
+        if(count() == 1) {
+            u = m;
+        }
+        return u;
+    }
+
+private:
+    base_type m {0};
+};
 
 namespace memory {
 
@@ -21,17 +108,19 @@ public:
             Code = 1 << 1, //! Code editor. Lines count, monospaced font
             Hex  = 1 << 2, //! Hex viewer
         };
-        typedef int mask;  //! Type bitmask
+        static constexpr int count = 3;
+        using mask = ::mask<>; //! Type bitmask
     };
 
     explicit TextEditor(QWidget *parent = 0);
-    explicit TextEditor(Type::mask type = Type::Text, QWidget *parent = 0);
-    void setType(Type::mask type);
-    void openFile(const QString &m_fileName); // true if text, false if binary
+    explicit TextEditor(Type::mask types = Type::Text, QWidget *parent = 0);
+    void setTypes(Type::mask types);
+    void switchToType(Type::t_ types);
+    void openFile(const QString &m_fileName);
     void saveFile(const QString &m_fileName);
     void saveFile();
-    Type::mask type() { return m_type; } //! Type of text editor
-    Type::t_ content() { return m_content; } //! Current content type
+    Type::mask types() { return m_allowedTypes; } //! Types of text editor
+    Type::t_ currentType() { return m_currentType; } //! Current content type
 
 public slots:
     void onFileRenamed(const QString &fileName);
@@ -41,7 +130,6 @@ protected:
 
 private:
     void updateLook();
-    void switchToType(Type::t_ type);
 
     class LineNumberArea : public QWidget
     {
@@ -78,8 +166,11 @@ private:
 
     LineNumberArea m_lineNumberArea;
     QString m_fileName;
-    Type::mask m_type {Type::Text | Type::Hex};
-    Type::t_ m_content {Type::No};
+
+    Type::mask m_allowedTypes {Type::Text | Type::Hex}; //! Types allowed by TextEditor
+    Type::t_ m_currentType {Type::No}; //! Current TextEditorType
+    Type::t_ m_fileType {Type::No}; //! Type of a current file
+
     QSyntaxHighlighter *m_highlighter {nullptr};
 };
 

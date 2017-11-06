@@ -216,18 +216,18 @@ QTableWidget::item:selected {
        <widget class="QWidget" name="verticalLayoutWidget">
         <layout class="QVBoxLayout" name="contentLayout">
          <item>
-         <widget class="memory::TextEditor" name="textEditor">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="font">
-           <font>
-            <family>Consolas</family>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QPlainTextEdit {
+          <widget class="memory::TextEditor" name="textEditor">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <family>Consolas</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPlainTextEdit {
           padding-left: 5;
           padding-right: 5;
           padding-top: 10;
@@ -235,46 +235,46 @@ QTableWidget::item:selected {
 
           background: white;
   }</string>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
-          </property>
-          <property name="placeholderText">
-           <string>No Text</string>
-          </property>
-         </widget>
-         </item>
-         <item>
-         <widget class="QScrollArea" name="imgArea">
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="lineWidth">
-           <number>0</number>
-          </property>
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QLabel" name="imgView">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>320</width>
-             <height>69</height>
-            </rect>
            </property>
-           <property name="mouseTracking">
-            <bool>true</bool>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
            </property>
-           <property name="text">
-            <string/>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="placeholderText">
+            <string>No Text</string>
            </property>
           </widget>
-         </widget>
+         </item>
+         <item>
+          <widget class="QScrollArea" name="imgArea">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="lineWidth">
+            <number>0</number>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QLabel" name="imgView">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>320</width>
+              <height>85</height>
+             </rect>
+            </property>
+            <property name="mouseTracking">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </widget>
          </item>
         </layout>
        </widget>

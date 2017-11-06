@@ -34,7 +34,8 @@ HEADERS  += mainwindow.h \
     highlighters/js.h \
     highlighters/highlighters.h \
     highlighters/tab.h \
-    RunGuard.h
+    RunGuard.h \
+    syntax.h
 
 FORMS    += mainwindow.ui
 

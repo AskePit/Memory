@@ -28,6 +28,11 @@ MainWindow::MainWindow(QWidget *parent) :
     fileEdited(false)
 {
     ui->setupUi(this);
+    ui->textEditor->setTypes(
+          TextEditor::Type::Text
+        | TextEditor::Type::Code
+        | TextEditor::Type::Hex
+    );
     addAction(ui->actionSave);
     setWindowIcon(QIcon(QStringLiteral(":/window_icon.png")));
 
@@ -303,7 +308,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         ui->textEditor->show();
 
         ui->textEditor->openFile(currFileName);
-        if(ui->textEditor->content() == TextEditor::Type::Hex) {
+        if(ui->textEditor->currentType() == TextEditor::Type::Hex) {
             content |= Content::Binary;
         }
 

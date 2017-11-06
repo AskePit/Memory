@@ -1,11 +1,11 @@
 #include "texteditor.h"
 #include "highlighters/highlighters.h"
 #include "utils.h"
+#include "syntax.h"
 
 #include <QPainter>
 #include <QTextBlock>
 #include <QTextStream>
-#include <functional>
 
 namespace memory {
 
@@ -13,55 +13,86 @@ TextEditor::TextEditor(QWidget *parent)
     : QPlainTextEdit(parent)
     , m_lineNumberArea(this)
 {
-    connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
-    connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
-    connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
-
-    QFont font = QFont(QStringLiteral("Consolas"), 10);
-    setFont(font);
-
-    const int tabStop = 4;
-
-    QFontMetrics metrics(font);
-    setTabStopWidth(tabStop * metrics.width(' '));
-
-    updateLineNumberAreaWidth(0);
-    highlightCurrentLine();
+    setTypes(Type::Text);
 }
 
-TextEditor::TextEditor(Type::mask type, QWidget *parent)
+TextEditor::TextEditor(Type::mask allowedTypes, QWidget *parent)
     : QPlainTextEdit(parent)
     , m_lineNumberArea(this)
-    , m_type(type)
 {
-    updateLook();
+    setTypes(allowedTypes);
 }
 
-void TextEditor::setType(Type::mask type)
+void TextEditor::setTypes(Type::mask allowedTypes)
 {
-    m_type = type;
+    m_allowedTypes = allowedTypes;
+    if(m_allowedTypes.hasNo(m_currentType)) {
+        m_currentType = Type::No;
+    }
     updateLook();
 }
 
 void TextEditor::updateLook()
 {
+    // if there is only one allowed type - switch to it, there is no alternatives
+    auto unique = m_allowedTypes.unique();
+    if(unique) {
+        Type::t_ t(static_cast<Type::t_>(unique.get()));
+        switchToType(t);
+        return;
+    }
 
+    if(m_fileType != Type::No) {
+        // no need to change a look
+        if(m_currentType == m_fileType) {
+            return;
+        }
+
+        // if can switch to exact file's type - do it
+        if(m_allowedTypes & m_fileType) {
+            switchToType(m_fileType);
+            return;
+        }
+
+        // rest cases
+
+        // Hex | Code vs Text -> Code
+        if(m_fileType == Type::Text) {
+            switchToType(Type::Code);
+        // Hex | Text vs Code -> Text
+        } else if(m_fileType == Type::Code) {
+            switchToType(Type::Text);
+        // Text | Code vs Hex -> Text
+        } else if(m_fileType == Type::Hex) {
+            switchToType(Type::Text);
+        }
+    } else {
+        if(m_allowedTypes & Type::Text) {
+            switchToType(Type::Text);
+        } else if(m_allowedTypes & Type::Code) {
+            switchToType(Type::Code);
+        }
+    }
 }
 
 void TextEditor::switchToType(Type::t_ type)
 {
+    if(m_currentType == type) {
+        return;
+    }
+
+    QString face(type == Type::Text ? QLatin1String("Arial") : QLatin1String("Consolas"));
+    QFont f(face, 10);
+
     if(type == Type::Code) {
         m_lineNumberArea.show();
         connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
         connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
         connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
 
-        QFont font = QFont(QStringLiteral("Consolas"), 10);
-        setFont(font);
-
         const int tabStop = 4;
 
-        QFontMetrics metrics(font);
+        QFontMetrics metrics(f);
         setTabStopWidth(tabStop * metrics.width(' '));
 
         updateLineNumberAreaWidth(0);
@@ -75,7 +106,10 @@ void TextEditor::switchToType(Type::t_ type)
         disconnect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
     }
 
+    setFont(f);
+    setReadOnly(type == Type::Hex);
 
+    m_currentType = type;
 }
 
 void TextEditor::openFile(const QString &fileName)
@@ -86,22 +120,31 @@ void TextEditor::openFile(const QString &fileName)
     file.open(QIODevice::ReadOnly);
 
     bool binary = ::isBinary(file);
+    bool code = isCode(fileName);
+
+    m_fileType = binary ?
+                     Type::Hex : code ?
+                         Type::Code : Type::Text;
+
+    updateLook();
+
+    setReadOnly(binary);
+
+    QString face(binary || code ? QLatin1String("Consolas") : QLatin1String("Arial"));
+    QFont f(face, 10);
+    setFont(f);
+
     if(binary) {
-        //ui->textEditor->setPlainText(tr("BINARY FILE"));
-        setPlainText(binaryToText(file.readAll()));
+        if(m_currentType == Type::Hex) {
+            setPlainText(binaryToText(file.readAll()));
+        } else {
+            setPlainText(tr("BINARY FILE"));
+        }
         deleteHighlighter();
     } else {
         setPlainText(QString::fromUtf8(file.readAll()));
         applyHighlighter();
     }
-
-    setReadOnly(binary);
-
-    m_content = binary ?
-                Type::Hex :
-                m_type & Type::Code ?
-                    Type::Code :
-                    Type::Text;
 
     file.close();
 }
@@ -184,8 +227,16 @@ void TextEditor::deleteHighlighter()
 void TextEditor::onFileRenamed(const QString &fileName)
 {
     m_fileName = fileName;
-    if(m_content != Type::Hex) {
+
+    if(m_fileType == Type::Text || m_fileType == Type::Code) {
+        m_fileType = isCode(fileName) ? Type::Code : Type::Text;
+    }
+
+    updateLook();
+    if(m_currentType != Type::Hex) {
         applyHighlighter();
+    } else {
+        deleteHighlighter();
     }
 }
 
