@@ -1,7 +1,5 @@
 #include "texteditor.h"
-#include "highlighters/highlighters.h"
 #include "utils.h"
-#include "syntax.h"
 
 #include <QPainter>
 #include <QTextBlock>
@@ -37,7 +35,7 @@ void TextEditor::updateLook()
     // if there is only one allowed type - switch to it, there is no alternatives
     auto unique = m_allowedTypes.unique();
     if(unique) {
-        Type::t_ t(static_cast<Type::t_>(unique.get()));
+        Type::t t(static_cast<Type::t>(unique.get()));
         switchToType(t);
         return;
     }
@@ -75,13 +73,13 @@ void TextEditor::updateLook()
     }
 }
 
-void TextEditor::switchToType(Type::t_ type)
+void TextEditor::switchToType(Type::t type)
 {
     if(m_currentType == type) {
         return;
     }
 
-    QString face(type == Type::Text ? QLatin1String("Arial") : QLatin1String("Consolas"));
+    QString face(type == Type::Text ? "Arial" : "Consolas");
     QFont f(face, 10);
 
     if(type == Type::Code) {
@@ -120,7 +118,8 @@ void TextEditor::openFile(const QString &fileName)
     file.open(QIODevice::ReadOnly);
 
     bool binary = ::isBinary(file);
-    bool code = isCode(fileName);
+    Syntax::t syntax = Syntax::fromFile(fileName);
+    bool code = syntax != Syntax::No;
 
     m_fileType = binary ?
                      Type::Hex : code ?
@@ -130,7 +129,7 @@ void TextEditor::openFile(const QString &fileName)
 
     setReadOnly(binary);
 
-    QString face(binary || code ? QLatin1String("Consolas") : QLatin1String("Arial"));
+    QString face(binary || code ? "Consolas" : "Arial");
     QFont f(face, 10);
     setFont(f);
 
@@ -143,7 +142,7 @@ void TextEditor::openFile(const QString &fileName)
         deleteHighlighter();
     } else {
         setPlainText(QString::fromUtf8(file.readAll()));
-        applyHighlighter();
+        applyHighlighter(syntax);
     }
 
     file.close();
@@ -168,60 +167,30 @@ void TextEditor::saveFile()
 
 void TextEditor::applyHighlighter()
 {
-    QString prefix("memory::");
-    QString suffix("Highlighter");
-    QString id;
-    if(m_highlighter) {
-        id = m_highlighter->metaObject()->className(); // memory::CppHighlighter
-        id = id.mid(prefix.size());                  // CppHighlighter
-        id.truncate(id.count() - suffix.count());    // Cpp
-    }
-
-    const QString cppId("Cpp");
-    const QString jsId("JS");
-    const QString tabId("Tab");
-
-    bool doSwitch = false;
-
-    auto c = Qt::CaseInsensitive;
-
-    if(m_fileName.endsWith(QLatin1String(".cpp"), c) || m_fileName.endsWith(QLatin1String(".h"), c) || m_fileName.endsWith(QLatin1String(".c"), c)) {
-        doSwitch = (id != cppId);
-        id = cppId;
-    } else if(m_fileName.endsWith(QLatin1String(".js"), c)) {
-        doSwitch = (id != jsId);
-        id = jsId;
-    } else if(m_fileName.endsWith(QLatin1String(".tab"), c)) {
-        doSwitch = (id != tabId);
-        id = tabId;
-    } else {
-        doSwitch = !id.isEmpty();
-        id.clear();
-    }
-
-    if(!doSwitch) {
-        return;
-    }
-
     deleteHighlighter();
 
-    QTextDocument *doc = document();
+    m_highlighter = Syntax::getHighlighter(m_fileName);
+    if(m_highlighter) {
+        m_highlighter->setDocument(document());
+    }
+}
 
-    if(id == cppId) {
-        m_highlighter = new CppHighlighter(doc);
-    } else if(id == jsId) {
-        m_highlighter = new JSHighlighter(doc);
-    } else if(id == tabId) {
-        m_highlighter = new TabHighlighter(doc);
+void TextEditor::applyHighlighter(Syntax::t syntax)
+{
+    deleteHighlighter();
+
+    m_highlighter = Syntax::getHighlighter(syntax);
+    if(m_highlighter) {
+        m_highlighter->setDocument(document());
     }
 }
 
 void TextEditor::deleteHighlighter()
 {
     if(m_highlighter) {
-        delete m_highlighter;
-        m_highlighter = nullptr;
+        m_highlighter->setDocument(nullptr);
     }
+    m_highlighter = nullptr;
 }
 
 void TextEditor::onFileRenamed(const QString &fileName)

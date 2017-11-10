@@ -3,6 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <bitset>
+#include "syntax.h"
 
 class QSyntaxHighlighter;
 
@@ -101,7 +102,7 @@ public:
     //! TextEditor type
     class Type {
     public:
-        enum t_ {
+        enum t {
             No   = 0,      //! No content
 
             Text = 1 << 0, //! Common editor. No lines count, readable font
@@ -115,12 +116,12 @@ public:
     explicit TextEditor(QWidget *parent = 0);
     explicit TextEditor(Type::mask types = Type::Text, QWidget *parent = 0);
     void setTypes(Type::mask types);
-    void switchToType(Type::t_ types);
+    void switchToType(Type::t types);
     void openFile(const QString &m_fileName);
     void saveFile(const QString &m_fileName);
     void saveFile();
     Type::mask types() { return m_allowedTypes; } //! Types of text editor
-    Type::t_ currentType() { return m_currentType; } //! Current content type
+    Type::t currentType() { return m_currentType; } //! Current content type
 
 public slots:
     void onFileRenamed(const QString &fileName);
@@ -162,14 +163,15 @@ private:
     void updateLineNumberArea(const QRect &, int);
 
     void applyHighlighter();
+    void applyHighlighter(Syntax::t syntax);
     void deleteHighlighter();
 
     LineNumberArea m_lineNumberArea;
     QString m_fileName;
 
     Type::mask m_allowedTypes {Type::Text | Type::Hex}; //! Types allowed by TextEditor
-    Type::t_ m_currentType {Type::No}; //! Current TextEditorType
-    Type::t_ m_fileType {Type::No}; //! Type of a current file
+    Type::t m_currentType {Type::No}; //! Current TextEditorType
+    Type::t m_fileType {Type::No}; //! Type of a current file
 
     QSyntaxHighlighter *m_highlighter {nullptr};
 };

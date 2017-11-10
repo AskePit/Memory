@@ -17,23 +17,26 @@ SOURCES += main.cpp\
     dirmodel.cpp \
     eventfilter.cpp \
     texteditor.cpp \
-    highlighters/cplusplus.cpp \
     utils.cpp \
     highlighters/clike.cpp \
+    highlighters/cplusplus.cpp \
     highlighters/js.cpp \
+    highlighters/python.cpp \
     highlighters/tab.cpp \
-    RunGuard.cpp
+    RunGuard.cpp \
+    syntax.cpp
 
 HEADERS  += mainwindow.h \
     dirmodel.h \
     eventfilter.h \
     texteditor.h \
-    highlighters/cplusplus.h \
     utils.h \
     highlighters/clike.h \
+    highlighters/cplusplus.h \
     highlighters/js.h \
-    highlighters/highlighters.h \
+    highlighters/python.h \
     highlighters/tab.h \
+    highlighters/highlighters.h \
     RunGuard.h \
     syntax.h
 

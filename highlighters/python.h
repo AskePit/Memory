@@ -1,5 +1,5 @@
-#ifndef CLIKE_HIGHLIGHTER_H
-#define CLIKE_HIGHLIGHTER_H
+#ifndef PYTHON_HIGHLIGHTER_H
+#define PYTHON_HIGHLIGHTER_H
 
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
@@ -10,12 +10,12 @@ QT_END_NAMESPACE
 
 namespace memory {
 
-class CLikeHighlighter : public ::QSyntaxHighlighter
+class PythonHighlighter : public ::QSyntaxHighlighter
 {
     Q_OBJECT
 
 public:
-    CLikeHighlighter(QTextDocument *parent = 0);
+    PythonHighlighter(QTextDocument *parent = 0);
 
 protected:
     virtual void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
@@ -26,15 +26,13 @@ protected:
         String,
         Comment,
         Literal,
-        Preprocessor,
     };
 
     QMap<HighlightElement, QTextCharFormat> m_colors;
     QStringList m_keywords;
     QStringList m_classnames;
-    QStringList m_ppDirectives;
 };
 
 } // namespace memory
 
-#endif // CLIKE_HIGHLIGHTER_H
+#endif // PYTHON_HIGHLIGHTER_H
