@@ -22,6 +22,7 @@ SOURCES += main.cpp\
     highlighters/cplusplus.cpp \
     highlighters/js.cpp \
     highlighters/python.cpp \
+    highlighters/shell.cpp \
     highlighters/tab.cpp \
     RunGuard.cpp \
     syntax.cpp
@@ -35,6 +36,7 @@ HEADERS  += mainwindow.h \
     highlighters/cplusplus.h \
     highlighters/js.h \
     highlighters/python.h \
+    highlighters/shell.h \
     highlighters/tab.h \
     highlighters/highlighters.h \
     RunGuard.h \

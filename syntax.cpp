@@ -55,13 +55,15 @@ const std::map<Syntax::t, QStringList> Syntax::extensions = {
 std::map<Syntax::t, QSyntaxHighlighter *> Syntax::highlightersPool;
 
 Syntax::t Syntax::fromFile(const QString &fileName) {
+    // non-extension cases
+    if(fileName.endsWith("Makefile", Qt::CaseSensitive)) {
+        return Syntax::Makefile;
+    }
+
+    // extension cases
     QString ext = QFileInfo(fileName).suffix();
     if(ext.isEmpty()) {
         return Syntax::No;
-    }
-
-    if(fileName == "Makefile") {
-        return Syntax::Makefile;
     }
 
     for(auto &s : extensions) {
@@ -85,6 +87,8 @@ QSyntaxHighlighter *Syntax::getHighlighter(Syntax::t syntax) {
             case Syntax::Cpp: highlighter = new memory::CppHighlighter; break;
             case Syntax::JS: highlighter = new memory::JSHighlighter; break;
             case Syntax::Python: highlighter = new memory::PythonHighlighter; break;
+            case Syntax::Batch:
+            case Syntax::Shell: highlighter = new memory::ShellHighlighter; break;
             case Syntax::Tab: highlighter = new memory::TabHighlighter; break;
             default: ;
         }

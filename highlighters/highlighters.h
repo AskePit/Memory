@@ -4,6 +4,7 @@
 #include "cplusplus.h"
 #include "js.h"
 #include "python.h"
+#include "shell.h"
 #include "tab.h"
 
 #endif // HIGHLIGHTERS_H
