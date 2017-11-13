@@ -36,7 +36,7 @@ const std::map<Syntax::t, QStringList> Syntax::extensions = {
     {Syntax::Python, {"py",}},
     {Syntax::R, {"r",}},
     {Syntax::Ruby, {"rb", "rbw"}},
-    {Syntax::Rust, {"rust",}},
+    {Syntax::Rust, {"rs", "rust",}},
     {Syntax::Shell, {"sh",}},
     {Syntax::Scheme, {"ss", "sls", "scm"}},
     {Syntax::Smalltalk, {"st",}},
@@ -87,6 +87,7 @@ QSyntaxHighlighter *Syntax::getHighlighter(Syntax::t syntax) {
             case Syntax::Cpp: highlighter = new memory::CppHighlighter; break;
             case Syntax::JS: highlighter = new memory::JSHighlighter; break;
             case Syntax::Python: highlighter = new memory::PythonHighlighter; break;
+            case Syntax::Rust: highlighter = new memory::RustHighlighter; break;
             case Syntax::Batch:
             case Syntax::Shell: highlighter = new memory::ShellHighlighter; break;
             case Syntax::Tab: highlighter = new memory::TabHighlighter; break;

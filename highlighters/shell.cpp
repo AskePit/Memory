@@ -35,10 +35,10 @@ void ShellHighlighter::highlightBlock(const QString &text_)
 
     for(const QStringRef &comand : comands) {
         int i = 0;
-        while(i < comand.size() && comand[i].isSpace()) { // eat whitespace
+        while(i < comand.size() && comand.at(i).isSpace()) { // eat whitespace
             ++i;
         }
-        while(i < comand.size() && !comand[i].isSpace()) { // eat first word
+        while(i < comand.size() && !comand.at(i).isSpace()) { // eat first word
             ++i;
         }
 
