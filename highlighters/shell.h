@@ -23,7 +23,8 @@ protected:
     enum class HighlightElement {
         Comand,
         Key,
-        Comment
+        Comment,
+        Arg,
     };
 
     QMap<HighlightElement, QTextCharFormat> m_colors;

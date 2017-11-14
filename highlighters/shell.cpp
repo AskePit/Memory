@@ -10,16 +10,19 @@ ShellHighlighter::ShellHighlighter(QTextDocument *parent)
     QTextCharFormat CommandFormat;
     QTextCharFormat KeyFormat;
     QTextCharFormat CommentFormat;
+    QTextCharFormat ArgFormat;
 
     CommandFormat.setFontWeight(QFont::Bold);
     CommandFormat.setForeground(Qt::darkMagenta);
     KeyFormat.setForeground(QColor(120, 120, 255));
     CommentFormat.setForeground(QColor(30, 130, 160));
+    ArgFormat.setForeground(QColor(0, 0, 255));
 
     m_colors = {
         { HighlightElement::Comand, CommandFormat },
         { HighlightElement::Key, KeyFormat },
         { HighlightElement::Comment, CommentFormat },
+        { HighlightElement::Arg, ArgFormat },
     };
 }
 
@@ -45,11 +48,24 @@ void ShellHighlighter::highlightBlock(const QString &text_)
         setFormat(comand.position(), i, m_colors[HighlightElement::Comand]);
     }
 
-    QString regexp = "-{1,2}[\\w\\d_]+";
-    QRegularExpressionMatchIterator matchIterator = QRegularExpression(regexp).globalMatch(text_);
-    while (matchIterator.hasNext()) {
-        QRegularExpressionMatch match = matchIterator.next();
-        setFormat(match.capturedStart(), match.capturedLength(), m_colors[HighlightElement::Key]);
+    // key regexp
+    {
+        QString regexp = "-{1,2}[\\w\\d_]+";
+        QRegularExpressionMatchIterator matchIterator = QRegularExpression(regexp).globalMatch(text_);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), m_colors[HighlightElement::Key]);
+        }
+    }
+
+    // arg regexp
+    {
+        QString regexp = "[\\$%][\\w\\d_~]+";
+        QRegularExpressionMatchIterator matchIterator = QRegularExpression(regexp).globalMatch(text_);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), m_colors[HighlightElement::Arg]);
+        }
     }
 }
 
