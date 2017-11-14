@@ -20,6 +20,7 @@ SOURCES += main.cpp\
     utils.cpp \
     highlighters/clike.cpp \
     highlighters/cplusplus.cpp \
+    highlighters/ini.cpp \
     highlighters/js.cpp \
     highlighters/python.cpp \
     highlighters/rust.cpp \
@@ -35,6 +36,7 @@ HEADERS  += mainwindow.h \
     utils.h \
     highlighters/clike.h \
     highlighters/cplusplus.h \
+    highlighters/ini.h \
     highlighters/js.h \
     highlighters/python.h \
     highlighters/rust.h \

@@ -20,7 +20,7 @@ const std::map<Syntax::t, QStringList> Syntax::extensions = {
     {Syntax::Fortran, {"f", "for", "ftn", "f90", "f95", "f03", "f08",}},
     {Syntax::Haskell, {"hs", "lhs",}},
     {Syntax::Html, {"html", "htm", "htmls",}},
-    {Syntax::Ini, {"ini",}},
+    {Syntax::Ini, {"ini", "bashrc", "gitconfig"}},
     {Syntax::Java, {"java",}},
     {Syntax::JS, {"js", "json",}},
     {Syntax::Lisp, {"lisp",}},
@@ -85,6 +85,7 @@ QSyntaxHighlighter *Syntax::getHighlighter(Syntax::t syntax) {
 
         switch(syntax) {
             case Syntax::Cpp: highlighter = new memory::CppHighlighter; break;
+            case Syntax::Ini: highlighter = new memory::IniHighlighter; break;
             case Syntax::JS: highlighter = new memory::JSHighlighter; break;
             case Syntax::Python: highlighter = new memory::PythonHighlighter; break;
             case Syntax::Rust: highlighter = new memory::RustHighlighter; break;
