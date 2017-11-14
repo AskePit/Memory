@@ -5,31 +5,7 @@
 #include <QFileDialog>
 #include <QTableWidget>
 #include <QCoreApplication>
-#include <QImageReader>
 
-bool isBinary(QFile &f)
-{
-    if(f.size() == 0) {
-        return false;
-    }
-
-    char c;
-    while(1) {
-        f.getChar(&c);
-
-        if(c == 0) {
-            f.seek(0);
-            return true;
-        }
-
-        if(f.atEnd()) {
-            break;
-        }
-    }
-
-    f.seek(0);
-    return false;
-}
 
 int callQuestionDialog(const QString &message)
 {
@@ -69,13 +45,6 @@ QString getFileNameDialog(const QString &title, const QString &message, const QS
     }
 
     return answer;
-}
-
-void createFile(const QString &fileName)
-{
-    QFile f(fileName);
-    f.open(QIODevice::WriteOnly);
-    f.close();
 }
 
 QPoint getFilePos(QTableWidget *w, const QString &_str)
@@ -131,35 +100,4 @@ void boldenFileItem(QTableWidgetItem *item, bool bold)
     QFont font = item->font();
     font.setBold(bold);
     item->setFont(font);
-}
-
-bool isPicture(const QString &fileName)
-{
-    QImageReader reader(fileName);
-    return reader.format() != QByteArray();
-}
-
-static inline bool isNth(int val, int n) {
-    return val % n == n - 1;
-}
-
-QString binaryToText(const QByteArray &data, bool caps)
-{
-    Q_UNUSED(caps);
-    QByteArray raw = data.toHex();
-    QString res;
-    for(int i = 0; i<raw.size(); ++i) {
-        res += raw[i];
-        if(isNth(i, 2)) {
-            res += ' ';
-        }
-
-        if(isNth(i, 32)) {
-            res += '\n';
-        } else if(isNth(i, 16)) {
-            res += "| ";
-        }
-    }
-
-    return res;
 }

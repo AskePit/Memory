@@ -4,49 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport
+TEMPLATE = subdirs
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-TARGET = Memory
-TEMPLATE = app
-
-
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    dirmodel.cpp \
-    eventfilter.cpp \
-    texteditor.cpp \
-    utils.cpp \
-    highlighters/clike.cpp \
-    highlighters/cplusplus.cpp \
-    highlighters/ini.cpp \
-    highlighters/js.cpp \
-    highlighters/python.cpp \
-    highlighters/rust.cpp \
-    highlighters/shell.cpp \
-    highlighters/tab.cpp \
-    RunGuard.cpp \
-    syntax.cpp
-
-HEADERS  += mainwindow.h \
-    dirmodel.h \
-    eventfilter.h \
-    texteditor.h \
-    utils.h \
-    highlighters/clike.h \
-    highlighters/cplusplus.h \
-    highlighters/ini.h \
-    highlighters/js.h \
-    highlighters/python.h \
-    highlighters/rust.h \
-    highlighters/shell.h \
-    highlighters/tab.h \
-    highlighters/highlighters.h \
-    RunGuard.h \
-    syntax.h
-
-FORMS    += mainwindow.ui
-
-RESOURCES += \
-    resources/resources.qrc
+SUBDIRS += src \
+	askelib
+	
+src.depends = askelib

@@ -216,7 +216,7 @@ QTableWidget::item:selected {
        <widget class="QWidget" name="verticalLayoutWidget">
         <layout class="QVBoxLayout" name="contentLayout">
          <item>
-          <widget class="memory::TextEditor" name="textEditor">
+          <widget class="aske::TextEditor" name="textEditor">
            <property name="enabled">
             <bool>false</bool>
            </property>
@@ -500,9 +500,9 @@ QTableWidget::item:selected {
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>memory::TextEditor</class>
+   <class>aske::TextEditor</class>
    <extends>QPlainTextEdit</extends>
-   <header>texteditor.h</header>
+   <header location="global">widgets/texteditor/texteditor.h</header>
   </customwidget>
  </customwidgets>
  <resources>

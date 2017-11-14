@@ -4,6 +4,7 @@
 #include "dirmodel.h"
 #include "eventfilter.h"
 #include "utils.h"
+#include <std/fs.h>
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -29,9 +30,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->textEditor->setTypes(
-          TextEditor::Type::Text
-        | TextEditor::Type::Code
-        | TextEditor::Type::Hex
+          aske::TextEditor::Type::Text
+        | aske::TextEditor::Type::Code
+        | aske::TextEditor::Type::Hex
     );
     addAction(ui->actionSave);
     setWindowIcon(QIcon(QStringLiteral(":/window_icon.png")));
@@ -107,7 +108,7 @@ void MainWindow::makeConnections()
         vBar->setValue(vBar->value() + diff.y());
     });
 
-    connect(this, &MainWindow::fileRenamed, ui->textEditor, &TextEditor::onFileRenamed);
+    connect(this, &MainWindow::fileRenamed, ui->textEditor, &aske::TextEditor::onFileRenamed);
 
     connect(ui->textEditor, &QPlainTextEdit::modificationChanged, [=](bool b) {
         Q_UNUSED(b);
@@ -287,7 +288,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
     currFileName = i.filePath();
 
     // picture
-    if(isPicture(currFileName)) {
+    if(aske::isPicture(currFileName)) {
         content.reset();
         content |= Content::Picture;
         content |= Content::Binary;
@@ -308,7 +309,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         ui->textEditor->show();
 
         ui->textEditor->openFile(currFileName);
-        if(ui->textEditor->currentType() == TextEditor::Type::Hex) {
+        if(ui->textEditor->currentType() == aske::TextEditor::Type::Hex) {
             content |= Content::Binary;
         }
 
@@ -476,7 +477,7 @@ void MainWindow::on_actionNew_File_triggered()
 
     QString dirPath = dirModel->filePath(ui->tree->currentIndex());
     QString newFilePath = dirPath + QDir::separator() + fileName;
-    createFile(newFilePath);
+    aske::createFile(newFilePath);
 
     files << newFilePath;
     files.sort(Qt::CaseInsensitive);

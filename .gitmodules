@@ -1,0 +1,3 @@
+[submodule "askelib"]
+	path = askelib
+	url = https://github.com/AskePit/askelib.git
