@@ -248,32 +248,10 @@ QTableWidget::item:selected {
           </widget>
          </item>
          <item>
-          <widget class="QScrollArea" name="imgArea">
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="lineWidth">
-            <number>0</number>
-           </property>
+          <widget class="aske::MediaWidget" name="mediaWidget">
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
-           <widget class="QLabel" name="imgView">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>320</width>
-              <height>85</height>
-             </rect>
-            </property>
-            <property name="mouseTracking">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
           </widget>
          </item>
         </layout>
@@ -503,6 +481,12 @@ QTableWidget::item:selected {
    <class>aske::TextEditor</class>
    <extends>QPlainTextEdit</extends>
    <header location="global">widgets/texteditor/texteditor.h</header>
+  </customwidget>
+  <customwidget>
+   <class>aske::MediaWidget</class>
+   <extends>QScrollArea</extends>
+   <header location="global">widgets/mediawidget/mediawidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

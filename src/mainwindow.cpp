@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeSplitter->setSizes({100, 260});
     ui->contentSplitter->setSizes({100, 260});
 
-    ui->imgArea->hide();
+    ui->mediaWidget->hide();
 
     ui->tree->setModel(dirModel);
 
@@ -65,7 +65,7 @@ void MainWindow::makeConnections()
 {
     ui->filesList->installEventFilter(listEventFilter);
     ui->tree->installEventFilter(listEventFilter);
-    ui->imgView->installEventFilter(listEventFilter);
+    ui->mediaWidget->installEventFilter(listEventFilter);
 
     connect(ui->tree->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onDirChanged);
     connect(ui->filesList->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onFileChanged);
@@ -95,8 +95,8 @@ void MainWindow::makeConnections()
             return;
         }
 
-        auto hBar { ui->imgArea->horizontalScrollBar() };
-        auto vBar { ui->imgArea->verticalScrollBar() };
+        auto hBar { ui->mediaWidget->horizontalScrollBar() };
+        auto vBar { ui->mediaWidget->verticalScrollBar() };
         bool barsVisible { hBar->isVisible() || vBar->isVisible() };
 
         if(!barsVisible) {
@@ -294,10 +294,9 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
         content |= Content::Binary;
 
         ui->textEditor->hide();
-        ui->imgArea->show();
+        ui->mediaWidget->show();
 
-        QPixmap pixmap(currFileName);
-        ui->imgView->setPixmap(pixmap);
+        ui->mediaWidget->loadFile(currFileName);
     // text
     } else {
         content.reset();
@@ -305,7 +304,7 @@ void MainWindow::onFileChanged(const QModelIndex &current, const QModelIndex &pr
 
         ui->textEditor->setEnabled(true);
 
-        ui->imgArea->hide();
+        ui->mediaWidget->hide();
         ui->textEditor->show();
 
         ui->textEditor->openFile(currFileName);
