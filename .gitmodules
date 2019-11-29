@@ -1,1 +1,4 @@
 
+[submodule "askelib_qt"]
+	path = askelib_qt
+	url = https://github.com/AskePit/askelib_qt.git

@@ -29,8 +29,12 @@ FORMS += mainwindow.ui
 RESOURCES += \
     resources/resources.qrc
 
-include( ../askelib/public.pri )
+include( ../askelib_qt/public.pri )
+include( ../askelib_qt/askelib/public.pri )
 
+INCLUDEPATH += ..
 INCLUDEPATH += $${ASKE_INCLUDE_PATH}
+INCLUDEPATH += $${ASKELIB_QT_INCLUDE_PATH}
 
-LIBS += -L$${ASKE_LIB_PATH} -laskelib_std$${ASKE_LIB_SUFFIX} -laskelib_widgets$${ASKE_LIB_SUFFIX}
+LIBS += -L$${ASKELIB_QT_LIB_PATH} -laskelib_qt_std$${ASKELIB_QT_LIB_SUFFIX} -laskelib_qt_widgets$${ASKELIB_QT_LIB_SUFFIX}
+LIBS += -L$${ASKE_LIB_PATH} -laskelib_std$${ASKE_LIB_SUFFIX}

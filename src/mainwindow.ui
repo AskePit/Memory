@@ -203,14 +203,14 @@ QTableWidget::item:selected {
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>
+        <attribute name="verticalHeaderMinimumSectionSize">
+         <number>18</number>
+        </attribute>
         <attribute name="verticalHeaderDefaultSectionSize">
          <number>18</number>
         </attribute>
         <attribute name="verticalHeaderHighlightSections">
          <bool>false</bool>
-        </attribute>
-        <attribute name="verticalHeaderMinimumSectionSize">
-         <number>18</number>
         </attribute>
        </widget>
        <widget class="QWidget" name="verticalLayoutWidget">
@@ -480,12 +480,12 @@ QTableWidget::item:selected {
   <customwidget>
    <class>aske::TextEditor</class>
    <extends>QPlainTextEdit</extends>
-   <header location="global">widgets/texteditor/texteditor.h</header>
+   <header location="global">askelib_qt/widgets/texteditor/texteditor.h</header>
   </customwidget>
   <customwidget>
    <class>aske::MediaWidget</class>
    <extends>QScrollArea</extends>
-   <header location="global">widgets/mediawidget/mediawidget.h</header>
+   <header location="global">askelib_qt/widgets/mediawidget/mediawidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
