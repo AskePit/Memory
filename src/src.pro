@@ -32,9 +32,8 @@ RESOURCES += \
 include( ../askelib_qt/public.pri )
 include( ../askelib_qt/askelib/public.pri )
 
-INCLUDEPATH += ..
-INCLUDEPATH += $${ASKE_INCLUDE_PATH}
-INCLUDEPATH += $${ASKELIB_QT_INCLUDE_PATH}
+INCLUDEPATH += ../
+INCLUDEPATH += ../askelib_qt
 
-LIBS += -L$${ASKELIB_QT_LIB_PATH} -laskelib_qt_std$${ASKELIB_QT_LIB_SUFFIX} -laskelib_qt_widgets$${ASKELIB_QT_LIB_SUFFIX}
-LIBS += -L$${ASKE_LIB_PATH} -laskelib_std$${ASKE_LIB_SUFFIX}
+LIBS += -L$${ASKELIBQT_LIB_PATH} -laskelib_qt_std$${ASKELIBQT_LIB_SUFFIX} -laskelib_qt_widgets$${ASKELIBQT_LIB_SUFFIX}
+LIBS += -L$${ASKELIB_LIB_PATH} -laskelib_std$${ASKELIB_LIB_SUFFIX}
