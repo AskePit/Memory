@@ -97,7 +97,7 @@ bool DirModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) 
 {
     QString path = _model.filePath(sourceParent);
 
-    if(path == rootPath() && _model.filePath(sourceParent.child(sourceRow, 0)) != _filterRoot) {
+    if(path == rootPath() && _model.filePath(_model.index(sourceRow, 0, sourceParent)) != _filterRoot) {
         return false;
     }
 

@@ -21,7 +21,7 @@ static QString getTextDialog(const QString &title, const QString &message, const
 {
     bool ok = false;
     QString answer = QInputDialog::getText(parent, title, message, QLineEdit::Normal, text, &ok);
-    return ok ? answer : QString::null;
+    return ok ? answer : QString();
 }
 
 static const QString forbiddenSymbols("\":/\\*?<>|");
@@ -49,7 +49,7 @@ QString getFileNameDialog(const QString &title, const QString &message, const QS
 
 QPoint getFilePos(QTableWidget *w, const QString &_str)
 {
-    QStringRef str(&_str);
+    QStringView str(_str);
 
     if(str.endsWith(QLatin1String(".txt"))) {
         str.truncate(str.length()-4u);

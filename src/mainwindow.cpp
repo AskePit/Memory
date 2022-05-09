@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     listEventFilter(new EventFilter),
     content(Content::Text),
     settings(QStringLiteral("PitM"), QStringLiteral("Memory")),
-    currFileName(QString::null),
+    currFileName(QString()),
     dirChanged(true),
     fileEdited(false)
 {
@@ -347,7 +347,7 @@ void MainWindow::updateList()
     int columns = files.count() / rows;
     columns += files.count() % rows ? 1 : 0;
 
-    rows = std::min(rows, files.count());
+    rows = qMin(rows, files.count());
 
     ui->filesList->setRowCount(rows);
     ui->filesList->setColumnCount(columns);
@@ -442,7 +442,7 @@ void MainWindow::on_actionDelete_File_triggered()
 
     dirChanged = false;
     fileEdited = false;
-    currFileName = QString::null;
+    currFileName = QString();
 
     updateList();
 }
@@ -525,7 +525,7 @@ void MainWindow::changeDir(const QString &path)
     files.clear();
     ui->textEditor->clear();
     fileEdited = false; // prevent from clearing file due to previous line
-    currFileName = QString::null;
+    currFileName = QString();
 
     QString parentPath = QFileInfo(path).dir().path();
 

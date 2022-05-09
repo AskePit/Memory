@@ -18,7 +18,7 @@ bool EventFilter::eventFilter(QObject *watched, QEvent *event)
             case QEvent::Resize: emit listResized(); break;
             case QEvent::Wheel: {
                 QWheelEvent *w = dynamic_cast<QWheelEvent *>(event);
-                emit wheeled(w->delta());
+                emit wheeled(w->pixelDelta().y());
             } break;
             case QEvent::KeyPress: {
                 QKeyEvent *k = dynamic_cast<QKeyEvent *>(event);
